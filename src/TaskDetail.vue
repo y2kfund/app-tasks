@@ -299,7 +299,6 @@ async function handleImagePaste(event: ClipboardEvent, callback: (base64: string
 <style scoped>
 .detail-container {
   width: 100%;
-  max-width: 900px;
 }
 
 .detail-header {
