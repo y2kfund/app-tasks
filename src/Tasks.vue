@@ -704,10 +704,6 @@ async function deleteTask(taskId: string) {
   color: #333;
 }
 
-.form-body {
-  max-width: 800px;
-}
-
 .form-group {
   margin-bottom: 1.25rem;
 }
