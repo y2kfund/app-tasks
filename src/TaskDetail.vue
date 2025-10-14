@@ -335,18 +335,18 @@ async function handleImagePaste(event: ClipboardEvent, callback: (base64: string
 }
 
 .detail-content {
-  padding: 1.5rem;
+  padding: 0 0.5rem;
 }
 
 .task-info {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .info-row {
   display: grid;
   grid-template-columns: 150px 1fr;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 0.25rem 0;
   border-bottom: 1px solid #eee;
 }
 
@@ -388,8 +388,8 @@ async function handleImagePaste(event: ClipboardEvent, callback: (base64: string
 
 .history-section,
 .comments-section {
-  margin-top: 2rem;
-  padding-top: 2rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
   border-top: 1px solid #eee;
 }
 
