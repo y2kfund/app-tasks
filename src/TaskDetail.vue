@@ -1,161 +1,162 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')">
-    <div class="detail-modal">
-      <div class="detail-header">
-        <h2>Task Details</h2>
-        <button @click="$emit('close')" class="btn-close">×</button>
+  <div class="detail-container">
+    <div class="detail-header">
+      <button class="btn btn-back" @click="emit('close')">
+        ← Back to Tasks
+      </button>
+      <h2>Task Details</h2>
+      <button class="btn btn-danger" @click="deleteTask">Delete Task</button>
+    </div>
+
+    <div v-if="isLoading" class="loading">Loading task details...</div>
+    <div v-else-if="error" class="error">Error: {{ error }}</div>
+    <div v-else-if="task" class="detail-content">
+      <!-- Task Info -->
+      <div class="task-info">
+        <div class="info-row">
+          <label>Summary</label>
+          <div @dblclick="startEdit('summary', task.summary)">
+            <input
+              v-if="editingField === 'summary'"
+              v-model="editValue"
+              @blur="saveEdit"
+              @keyup.enter="saveEdit"
+              @keyup.esc="cancelEdit"
+              class="inline-edit"
+              ref="editInput"
+            />
+            <div v-else class="info-value">{{ task.summary }}</div>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <label>Description</label>
+          <div @dblclick="startEdit('description', task.description || '')">
+            <textarea
+              v-if="editingField === 'description'"
+              v-model="editValue"
+              @blur="saveEdit"
+              @keyup.esc="cancelEdit"
+              @paste="handlePaste"
+              class="inline-edit"
+              rows="4"
+              ref="editInput"
+            />
+            <div v-else class="info-value" v-html="renderMarkdown(task.description || '')"></div>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <label>Status</label>
+          <div @dblclick="startEdit('status', task.status)">
+            <select
+              v-if="editingField === 'status'"
+              v-model="editValue"
+              @blur="saveEdit"
+              @change="saveEdit"
+              class="inline-edit"
+              ref="editInput"
+            >
+              <option value="open">Open</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="closed">Closed</option>
+            </select>
+            <span v-else :class="`status-badge status-${task.status}`">
+              {{ task.status }}
+            </span>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <label>Priority</label>
+          <div @dblclick="startEdit('priority', task.priority)">
+            <select
+              v-if="editingField === 'priority'"
+              v-model="editValue"
+              @blur="saveEdit"
+              @change="saveEdit"
+              class="inline-edit"
+              ref="editInput"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+            <span v-else :class="`priority-badge priority-${task.priority}`">
+              {{ task.priority }}
+            </span>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <label>Assigned To</label>
+          <div @dblclick="startEdit('assigned_to', task.assigned_to || '')">
+            <input
+              v-if="editingField === 'assigned_to'"
+              v-model="editValue"
+              @blur="saveEdit"
+              @keyup.enter="saveEdit"
+              @keyup.esc="cancelEdit"
+              class="inline-edit"
+              ref="editInput"
+            />
+            <div v-else class="info-value">{{ task.assigned_to || '-' }}</div>
+          </div>
+        </div>
       </div>
 
-      <div v-if="isLoading" class="loading">Loading...</div>
-      <div v-else-if="error" class="error">Error: {{ error.message }}</div>
-      <div v-else-if="task" class="detail-content">
-        <!-- Task Info -->
-        <div class="task-info">
-          <div class="info-row">
-            <label>Summary</label>
-            <div @dblclick="startEdit('summary', task.summary)">
-              <input
-                v-if="editingField === 'summary'"
-                v-model="editValue"
-                @blur="saveEdit"
-                @keyup.enter="saveEdit"
-                @keyup.esc="cancelEdit"
-                class="inline-edit"
-                ref="editInput"
-              />
-              <div v-else class="info-value">{{ task.summary }}</div>
+      <!-- History Timeline -->
+      <div class="history-section">
+        <h3>History</h3>
+        <div v-if="historyLoading" class="loading">Loading history...</div>
+        <div v-else-if="history && history.length > 0" class="history-list">
+          <div v-for="item in history" :key="item.id" class="history-item">
+            <div class="history-meta">
+              <strong>{{ item.changed_by }}</strong>
+              <span class="history-date">{{ formatDateTime(item.changed_at) }}</span>
             </div>
-          </div>
-
-          <div class="info-row">
-            <label>Description</label>
-            <div @dblclick="startEdit('description', task.description || '')">
-              <textarea
-                v-if="editingField === 'description'"
-                v-model="editValue"
-                @blur="saveEdit"
-                @keyup.esc="cancelEdit"
-                @paste="handlePaste"
-                class="inline-edit"
-                rows="4"
-                ref="editInput"
-              />
-              <div v-else class="info-value" v-html="renderMarkdown(task.description || '')"></div>
-            </div>
-          </div>
-
-          <div class="info-row">
-            <label>Status</label>
-            <div @dblclick="startEdit('status', task.status)">
-              <select
-                v-if="editingField === 'status'"
-                v-model="editValue"
-                @blur="saveEdit"
-                @change="saveEdit"
-                class="inline-edit"
-                ref="editInput"
-              >
-                <option value="open">Open</option>
-                <option value="in-progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="closed">Closed</option>
-              </select>
-              <span v-else :class="`status-badge status-${task.status}`">
-                {{ task.status }}
+            <div class="history-change">
+              Changed <strong>{{ formatFieldName(item.field_name) }}</strong>
+              <span class="change-values">
+                from "<span class="old-value">{{ item.old_value }}</span>"
+                to "<span class="new-value">{{ item.new_value }}</span>"
               </span>
             </div>
           </div>
+        </div>
+        <div v-else class="no-history">No history yet</div>
+      </div>
 
-          <div class="info-row">
-            <label>Priority</label>
-            <div @dblclick="startEdit('priority', task.priority)">
-              <select
-                v-if="editingField === 'priority'"
-                v-model="editValue"
-                @blur="saveEdit"
-                @change="saveEdit"
-                class="inline-edit"
-                ref="editInput"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-              </select>
-              <span v-else :class="`priority-badge priority-${task.priority}`">
-                {{ task.priority }}
-              </span>
+      <!-- Comments Section -->
+      <div class="comments-section">
+        <h3>Comments</h3>
+        <div v-if="commentsLoading" class="loading">Loading comments...</div>
+        <div v-else-if="comments && comments.length > 0" class="comments-list">
+          <div v-for="comment in comments" :key="comment.id" class="comment-item">
+            <div class="comment-meta">
+              <strong>{{ comment.created_by }}</strong>
+              <span class="comment-date">{{ formatDateTime(comment.created_at) }}</span>
             </div>
-          </div>
-
-          <div class="info-row">
-            <label>Assigned To</label>
-            <div @dblclick="startEdit('assigned_to', task.assigned_to || '')">
-              <input
-                v-if="editingField === 'assigned_to'"
-                v-model="editValue"
-                @blur="saveEdit"
-                @keyup.enter="saveEdit"
-                @keyup.esc="cancelEdit"
-                class="inline-edit"
-                ref="editInput"
-              />
-              <div v-else class="info-value">{{ task.assigned_to || '-' }}</div>
-            </div>
+            <div class="comment-text" v-html="renderMarkdown(comment.comment)"></div>
           </div>
         </div>
+        <div v-else class="no-comments">No comments yet</div>
 
-        <!-- History Timeline -->
-        <div class="history-section">
-          <h3>History</h3>
-          <div v-if="historyLoading" class="loading">Loading history...</div>
-          <div v-else-if="history && history.length > 0" class="history-list">
-            <div v-for="item in history" :key="item.id" class="history-item">
-              <div class="history-meta">
-                <strong>{{ item.changed_by }}</strong>
-                <span class="history-date">{{ formatDateTime(item.changed_at) }}</span>
-              </div>
-              <div class="history-change">
-                Changed <strong>{{ formatFieldName(item.field_name) }}</strong>
-                <span class="change-values">
-                  from "<span class="old-value">{{ item.old_value }}</span>"
-                  to "<span class="new-value">{{ item.new_value }}</span>"
-                </span>
-              </div>
-            </div>
-          </div>
-          <div v-else class="no-history">No history yet</div>
-        </div>
-
-        <!-- Comments Section -->
-        <div class="comments-section">
-          <h3>Comments</h3>
-          <div v-if="commentsLoading" class="loading">Loading comments...</div>
-          <div v-else-if="comments && comments.length > 0" class="comments-list">
-            <div v-for="comment in comments" :key="comment.id" class="comment-item">
-              <div class="comment-meta">
-                <strong>{{ comment.created_by }}</strong>
-                <span class="comment-date">{{ formatDateTime(comment.created_at) }}</span>
-              </div>
-              <div class="comment-text" v-html="renderMarkdown(comment.comment)"></div>
-            </div>
-          </div>
-          <div v-else class="no-comments">No comments yet</div>
-
-          <!-- Add Comment -->
-          <div class="add-comment">
-            <textarea
-              v-model="newComment"
-              placeholder="Add a comment..."
-              rows="3"
-              class="comment-input"
-              @paste="handleCommentPaste"
-            ></textarea>
-            <small>Paste images from clipboard</small>
-            <button @click="addComment" :disabled="!newComment.trim()" class="btn-primary">
-              Add Comment
-            </button>
-          </div>
+        <!-- Add Comment -->
+        <div class="add-comment">
+          <textarea
+            v-model="newComment"
+            placeholder="Add a comment..."
+            rows="3"
+            class="comment-input"
+            @paste="handleCommentPaste"
+          ></textarea>
+          <small>Paste images from clipboard</small>
+          <button @click="addComment" :disabled="!newComment.trim()" class="btn-primary">
+            Add Comment
+          </button>
         </div>
       </div>
     </div>
@@ -296,42 +297,42 @@ async function handleImagePaste(event: ClipboardEvent, callback: (base64: string
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.detail-modal {
-  background: white;
-  border-radius: 8px;
-  width: 90%;
+.detail-container {
+  width: 100%;
   max-width: 900px;
-  max-height: 90vh;
-  overflow-y: auto;
 }
 
 .detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
 }
 
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 2rem;
+.detail-header h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+  text-align: center;
+}
+
+.btn-back {
+  background: #f8f9fa;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
   cursor: pointer;
-  color: #999;
+  transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+  background: #e9ecef;
 }
 
 .detail-content {

@@ -3,4 +3,5 @@ export { default as TaskDetail } from './TaskDetail.vue'
 
 export interface TasksProps {
   userId?: string
+  showHeaderLink?: boolean
 }

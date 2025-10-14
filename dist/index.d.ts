@@ -5,6 +5,7 @@ import { PublicProps } from 'vue';
 
 declare interface Props {
     userId?: string;
+    showHeaderLink?: boolean;
 }
 
 declare interface Props_2 {
@@ -20,14 +21,22 @@ onClose?: (() => any) | undefined;
 editInput: HTMLInputElement;
 }, HTMLDivElement>;
 
-export declare const Tasks: DefineComponent<Props, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly<Props> & Readonly<{}>, {
+export declare const Tasks: DefineComponent<Props, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {
+minimize: () => any;
+navigate: () => any;
+}, string, PublicProps, Readonly<Props> & Readonly<{
+onMinimize?: (() => any) | undefined;
+onNavigate?: (() => any) | undefined;
+}>, {
 userId: string;
+showHeaderLink: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
 editInput: HTMLInputElement;
 }, HTMLDivElement>;
 
 export declare interface TasksProps {
     userId?: string;
+    showHeaderLink?: boolean;
 }
 
 export { }

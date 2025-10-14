@@ -1,186 +1,230 @@
 <template>
-  <div class="tasks-container">
-    <!-- Header with Search and Filters -->
-    <div class="tasks-header">
-      <h1>Tasks</h1>
-      <div class="tasks-controls">
+  <div class="tasks-card">
+    <!-- Loading state -->
+    <div v-if="isLoading" class="loading">
+      <div class="loading-spinner"></div>
+      Loading tasks...
+    </div>
+
+    <!-- Error state -->
+    <div v-else-if="error" class="error">
+      <h3>Error loading tasks</h3>
+      <p>{{ error }}</p>
+    </div>
+
+    <!-- Task List View -->
+    <div v-else-if="currentView === 'list'" class="tasks-container">
+      <div class="tasks-header">
+        <h2 
+          :class="{ 'tasks-header-clickable': props.showHeaderLink }"
+          @click="props.showHeaderLink && emit('navigate')"
+        >
+          Tasks Management
+        </h2>
+        <div class="tasks-header-actions">
+          <button class="btn btn-primary" @click="showCreateView">
+            <span class="icon">➕</span> New Task
+          </button>
+          <button 
+            class="btn btn-minimize" 
+            @click="emit('minimize')"
+            title="Minimize"
+          >
+            ➖
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="tasks-filters">
         <input
           v-model="searchQuery"
           type="text"
           placeholder="Search tasks..."
-          class="search-input"
+          class="filter-input"
         />
-        <select v-model="statusFilter" class="status-filter">
-          <option value="">All Statuses</option>
+        <select v-model="statusFilter" class="filter-select">
+          <option value="">All Status</option>
           <option value="open">Open</option>
-          <option value="in-progress">In Progress</option>
+          <option value="in_progress">In Progress</option>
           <option value="completed">Completed</option>
-          <option value="closed">Closed</option>
         </select>
-        <button @click="showCreateModal = true" class="btn-primary">
-          + New Task
-        </button>
       </div>
-    </div>
 
-    <!-- Loading State -->
-    <div v-if="isLoading" class="loading">Loading tasks...</div>
-
-    <!-- Error State -->
-    <div v-else-if="error" class="error">
-      Error loading tasks: {{ error.message }}
-    </div>
-
-    <!-- Tasks Table -->
-    <div v-else class="tasks-table-wrapper">
-      <table class="tasks-table">
-        <thead>
-          <tr>
-            <th>Summary</th>
-            <th>Status</th>
-            <th>Priority</th>
-            <th>Assigned To</th>
-            <th>Created</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="task in filteredTasks" :key="task.id">
-            <td @dblclick="startEdit(task.id, 'summary', task.summary)">
-              <div v-if="editingCell?.taskId === task.id && editingCell?.field === 'summary'">
+      <!-- Tasks Table -->
+      <div class="tasks-table-wrapper">
+        <table class="tasks-table">
+          <thead>
+            <tr>
+              <th>Summary</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Assigned To</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="task in filteredTasks" :key="task.id">
+              <td class="editable-cell" @dblclick="startEditCell(task, 'summary')">
                 <input
-                  v-model="editValue"
-                  @blur="saveEdit(task)"
-                  @keyup.enter="saveEdit(task)"
-                  @keyup.esc="cancelEdit"
-                  class="inline-edit"
+                  v-if="editingCell?.taskId === task.id && editingCell?.field === 'summary'"
                   ref="editInput"
+                  v-model="editValue"
+                  type="text"
+                  @blur="saveEdit(task, 'summary')"
+                  @keyup.enter="saveEdit(task, 'summary')"
+                  @keyup.escape="cancelEdit"
                 />
-              </div>
-              <div v-else>{{ task.summary }}</div>
-            </td>
-            <td @dblclick="startEdit(task.id, 'status', task.status)">
-              <div v-if="editingCell?.taskId === task.id && editingCell?.field === 'status'">
+                <span v-else>{{ task.summary }}</span>
+              </td>
+              <td class="editable-cell" @dblclick="startEditCell(task, 'status')">
                 <select
+                  v-if="editingCell?.taskId === task.id && editingCell?.field === 'status'"
                   v-model="editValue"
-                  @blur="saveEdit(task)"
-                  @change="saveEdit(task)"
-                  class="inline-edit"
-                  ref="editInput"
+                  @blur="saveEdit(task, 'status')"
+                  @change="saveEdit(task, 'status')"
+                  autofocus
                 >
                   <option value="open">Open</option>
-                  <option value="in-progress">In Progress</option>
+                  <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
-                  <option value="closed">Closed</option>
                 </select>
-              </div>
-              <span v-else :class="`status-badge status-${task.status}`">
-                {{ task.status }}
-              </span>
-            </td>
-            <td @dblclick="startEdit(task.id, 'priority', task.priority)">
-              <div v-if="editingCell?.taskId === task.id && editingCell?.field === 'priority'">
+                <span v-else :class="`status-badge status-${task.status}`">
+                  {{ task.status.replace('_', ' ') }}
+                </span>
+              </td>
+              <td class="editable-cell" @dblclick="startEditCell(task, 'priority')">
                 <select
+                  v-if="editingCell?.taskId === task.id && editingCell?.field === 'priority'"
                   v-model="editValue"
-                  @blur="saveEdit(task)"
-                  @change="saveEdit(task)"
-                  class="inline-edit"
-                  ref="editInput"
+                  @blur="saveEdit(task, 'priority')"
+                  @change="saveEdit(task, 'priority')"
+                  autofocus
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
-                  <option value="critical">Critical</option>
                 </select>
-              </div>
-              <span v-else :class="`priority-badge priority-${task.priority}`">
-                {{ task.priority }}
-              </span>
-            </td>
-            <td @dblclick="startEdit(task.id, 'assigned_to', task.assigned_to || '')">
-              <div v-if="editingCell?.taskId === task.id && editingCell?.field === 'assigned_to'">
+                <span v-else :class="`priority-badge priority-${task.priority}`">
+                  {{ task.priority }}
+                </span>
+              </td>
+              <td class="editable-cell" @dblclick="startEditCell(task, 'assigned_to')">
                 <input
-                  v-model="editValue"
-                  @blur="saveEdit(task)"
-                  @keyup.enter="saveEdit(task)"
-                  @keyup.esc="cancelEdit"
-                  class="inline-edit"
+                  v-if="editingCell?.taskId === task.id && editingCell?.field === 'assigned_to'"
                   ref="editInput"
+                  v-model="editValue"
+                  type="text"
+                  @blur="saveEdit(task, 'assigned_to')"
+                  @keyup.enter="saveEdit(task, 'assigned_to')"
+                  @keyup.escape="cancelEdit"
                 />
-              </div>
-              <div v-else>{{ task.assigned_to || '-' }}</div>
-            </td>
-            <td>{{ formatDate(task.created_at) }}</td>
-            <td>
-              <button @click="viewTaskDetail(task.id)" class="btn-icon" title="View Details">
-                🔍
-              </button>
-              <button @click="deleteTask(task.id)" class="btn-icon btn-danger" title="Delete">
-                🗑️
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Create Task Modal -->
-    <div v-if="showCreateModal" class="modal-overlay" @click.self="showCreateModal = false">
-      <div class="modal">
-        <h2>Create New Task</h2>
-        <form @submit.prevent="createTask">
-          <div class="form-group">
-            <label>Summary *</label>
-            <input v-model="newTask.summary" required class="form-input" />
-          </div>
-          <div class="form-group">
-            <label>Description</label>
-            <textarea
-              v-model="newTask.description"
-              rows="4"
-              class="form-input"
-              @paste="handlePaste"
-            ></textarea>
-            <small>Paste images from clipboard</small>
-          </div>
-          <div class="form-group">
-            <label>Status *</label>
-            <select v-model="newTask.status" required class="form-input">
-              <option value="open">Open</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-              <option value="closed">Closed</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Priority *</label>
-            <select v-model="newTask.priority" required class="form-input">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Assigned To</label>
-            <input v-model="newTask.assigned_to" class="form-input" />
-          </div>
-          <div class="form-actions">
-            <button type="button" @click="showCreateModal = false" class="btn-secondary">
-              Cancel
-            </button>
-            <button type="submit" class="btn-primary">Create Task</button>
-          </div>
-        </form>
+                <span v-else>{{ task.assigned_to || '-' }}</span>
+              </td>
+              <td>{{ formatDate(task.created_at) }}</td>
+              <td class="task-actions">
+                <button 
+                  class="btn btn-icon" 
+                  @click="showTaskDetail(task.id)"
+                  title="View details"
+                >
+                  👁️
+                </button>
+                <button 
+                  class="btn btn-icon btn-danger" 
+                  @click="deleteTask(task.id)"
+                  title="Delete task"
+                >
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <!-- Task Detail Modal -->
+    <!-- Create Task View -->
+    <div v-else-if="currentView === 'create'" class="task-form-container">
+      <div class="form-header">
+        <button class="btn btn-back" @click="backToList">
+          ← Back to Tasks
+        </button>
+        <h2>Create New Task</h2>
+      </div>
+
+      <div class="form-body">
+        <div class="form-group">
+          <label for="task-summary">Summary *</label>
+          <input
+            id="task-summary"
+            v-model="newTask.summary"
+            type="text"
+            placeholder="Enter task summary"
+            autofocus
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="task-description">Description</label>
+          <textarea
+            id="task-description"
+            v-model="newTask.description"
+            placeholder="Enter task description"
+            rows="6"
+          ></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-status">Status</label>
+            <select id="task-status" v-model="newTask.status">
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="task-priority">Priority</label>
+            <select id="task-priority" v-model="newTask.priority">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="task-assigned">Assigned To</label>
+          <input
+            id="task-assigned"
+            v-model="newTask.assigned_to"
+            type="text"
+            placeholder="Enter assignee"
+          />
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-cancel" @click="backToList">Cancel</button>
+          <button 
+            class="btn btn-primary" 
+            @click="createTask"
+            :disabled="!newTask.summary.trim()"
+          >
+            Create Task
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task Detail View -->
     <TaskDetail
-      v-if="selectedTaskId"
+      v-else-if="currentView === 'detail' && selectedTaskId"
       :task-id="selectedTaskId"
       :user-id="userId"
-      @close="selectedTaskId = null"
+      @close="backToList"
     />
   </div>
 </template>
@@ -191,23 +235,30 @@ import {
   useTasksQuery,
   useCreateTaskMutation,
   useUpdateTaskMutation,
-  useDeleteTaskMutation, // ✅ Add this
+  useDeleteTaskMutation,
   type Task,
 } from '@y2kfund/core/tasks'
 import TaskDetail from './TaskDetail.vue'
 
 interface Props {
   userId?: string
+  showHeaderLink?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   userId: 'default-user',
+  showHeaderLink: false,
 })
+
+const emit = defineEmits<{ 
+  'minimize': []
+  'navigate': []
+}>()
 
 // State
 const searchQuery = ref('')
 const statusFilter = ref('')
-const showCreateModal = ref(false)
+const currentView = ref<'list' | 'detail' | 'create'>('list')
 const selectedTaskId = ref<string | null>(null)
 const editingCell = ref<{ taskId: string; field: string } | null>(null)
 const editValue = ref('')
@@ -222,13 +273,13 @@ const newTask = ref({
   created_by: props.userId,
 })
 
-// Queries
+// Queries - Pass computed filters
 const filters = computed(() => ({
   status: statusFilter.value || undefined,
   search: searchQuery.value || undefined,
 }))
 
-const { data: tasks, isLoading, error } = useTasksQuery(filters.value)
+const { data: tasks, isLoading, error } = useTasksQuery(filters)
 const createMutation = useCreateTaskMutation()
 const updateMutation = useUpdateTaskMutation()
 const deleteMutation = useDeleteTaskMutation()
@@ -244,8 +295,8 @@ function formatDate(dateString: string) {
 async function createTask() {
   try {
     await createMutation.mutateAsync(newTask.value)
-    showCreateModal.value = false
     resetForm()
+    currentView.value = 'list'
   } catch (err) {
     console.error('Failed to create task:', err)
   }
@@ -262,9 +313,24 @@ function resetForm() {
   }
 }
 
-async function startEdit(taskId: string, field: string, currentValue: string) {
-  editingCell.value = { taskId, field }
-  editValue.value = currentValue
+function showCreateView() {
+  resetForm()
+  currentView.value = 'create'
+}
+
+function showTaskDetail(taskId: string) {
+  selectedTaskId.value = taskId
+  currentView.value = 'detail'
+}
+
+function backToList() {
+  currentView.value = 'list'
+  selectedTaskId.value = null
+}
+
+async function startEditCell(task: Task, field: keyof Task) {
+  editingCell.value = { taskId: task.id, field }
+  editValue.value = String(task[field] || '')
   await nextTick()
   editInput.value?.focus()
 }
@@ -274,89 +340,215 @@ function cancelEdit() {
   editValue.value = ''
 }
 
-async function saveEdit(task: Task) {
+async function saveEdit(task: Task, field: keyof Task) {
   if (!editingCell.value) return
-  
-  const { field } = editingCell.value
-  
-  if (editValue.value !== task[field as keyof Task]) {
-    try {
-      await updateMutation.mutateAsync({
-        id: task.id,
-        updates: { [field]: editValue.value },
-        userId: props.userId,
-      })
-    } catch (err) {
-      console.error('Failed to update task:', err)
-    }
-  }
-  
-  cancelEdit()
-}
 
-function viewTaskDetail(taskId: string) {
-  selectedTaskId.value = taskId
+  try {
+    await updateMutation.mutateAsync({
+      id: task.id,
+      updates: { [field]: editValue.value },
+      userId: props.userId, // Add userId
+    })
+    cancelEdit()
+  } catch (err) {
+    console.error('Failed to update task:', err)
+  }
 }
 
 async function deleteTask(taskId: string) {
-  if (confirm('Are you sure you want to delete this task?')) {
-    try {
-      await deleteMutation.mutateAsync(taskId)
-    } catch (err) {
-      console.error('Failed to delete task:', err)
-    }
-  }
-}
+  if (!confirm('Are you sure you want to delete this task?')) return
 
-async function handlePaste(event: ClipboardEvent) {
-  const items = event.clipboardData?.items
-  if (!items) return
-
-  for (const item of items) {
-    if (item.type.indexOf('image') !== -1) {
-      event.preventDefault()
-      const blob = item.getAsFile()
-      if (blob) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          const base64 = e.target?.result as string
-          newTask.value.description += `\n![image](${base64})\n`
-        }
-        reader.readAsDataURL(blob)
-      }
-    }
+  try {
+    await deleteMutation.mutateAsync(taskId)
+  } catch (err) {
+    console.error('Failed to delete task:', err)
   }
 }
 </script>
 
 <style scoped>
-.tasks-container {
+.tasks-card {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(0,0,0,.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+  background: white;
+}
+
+.loading, .error {
   padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  text-align: center;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.loading {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e9ecef;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.tasks-container {
+  width: 100%;
 }
 
 .tasks-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
 }
 
-.tasks-controls {
+.tasks-header h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.tasks-header-clickable {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.tasks-header-clickable:hover {
+  color: #007bff;
+}
+
+.tasks-header-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
+  align-items: center;
 }
 
-.search-input,
-.status-filter {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  background: white;
 }
 
-.search-input {
-  min-width: 300px;
+.btn-primary {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+.btn-primary:disabled {
+  background: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-minimize {
+  background: #fff;
+  border-color: #6c757d;
+}
+
+.btn-minimize:hover {
+  background: #545b62;
+  border-color: #4e555b;
+  color: white;
+}
+
+.btn-back {
+  background: #f8f9fa;
+  color: #495057;
+  border-color: #dee2e6;
+}
+
+.btn-back:hover {
+  background: #e9ecef;
+}
+
+.btn-cancel {
+  background: white;
+  color: #6c757d;
+}
+
+.btn-cancel:hover {
+  background: #f8f9fa;
+}
+
+.btn-icon {
+    padding: 0.375rem 0.5rem !important;
+    font-size: 1rem;
+    line-height: 10px;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+  border-color: #bd2130;
+}
+
+.tasks-filters {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-input,
+.filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.filter-input {
+  flex: 1;
+}
+
+.filter-select {
+  min-width: 150px;
 }
 
 .tasks-table-wrapper {
@@ -366,140 +558,184 @@ async function handlePaste(event: ClipboardEvent) {
 .tasks-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 0.875rem;
 }
 
-.tasks-table th,
-.tasks-table td {
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid #eee;
+.tasks-table thead {
+  background: #f8f9fa;
 }
 
 .tasks-table th {
-  background: #f8f9fa;
+  padding: 0.5rem;
+  text-align: left;
   font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.tasks-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .tasks-table tbody tr:hover {
   background: #f8f9fa;
 }
 
-.inline-edit {
+.editable-cell {
+  cursor: pointer;
+}
+
+.editable-cell:hover {
+  background: #e9ecef;
+}
+
+.editable-cell input,
+.editable-cell select {
   width: 100%;
-  padding: 0.25rem;
+  padding: 0.25rem 0.5rem;
   border: 1px solid #007bff;
   border-radius: 4px;
+  font-size: 0.875rem;
 }
 
 .status-badge,
 .priority-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.status-open { background: #e3f2fd; color: #1976d2; }
-.status-in-progress { background: #fff3e0; color: #f57c00; }
-.status-completed { background: #e8f5e9; color: #388e3c; }
-.status-closed { background: #f5f5f5; color: #757575; }
-
-.priority-low { background: #e8f5e9; color: #388e3c; }
-.priority-medium { background: #fff3e0; color: #f57c00; }
-.priority-high { background: #ffe0b2; color: #e64a19; }
-.priority-critical { background: #ffebee; color: #c62828; }
-
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.25rem;
-  padding: 0.25rem;
-  margin: 0 0.25rem;
-}
-
-.btn-icon:hover {
-  opacity: 0.7;
-}
-
-.btn-primary {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-.btn-primary:hover {
-  background: #0056b3;
+.status-open {
+  background: #e7f3ff;
+  color: #0066cc;
 }
 
-.btn-secondary {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
+.status-in_progress {
+  background: #fff3cd;
+  color: #856404;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+.status-completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.priority-low {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.priority-medium {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.priority-high {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.task-actions {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  gap: 0.25rem;
 }
 
-.modal {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
+/* Form Styles */
+.task-form-container {
+  width: 100%;
+}
+
+.form-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.form-header h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-body {
+  max-width: 800px;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  font-size: 0.875rem;
+  color: #333;
 }
 
-.form-input {
+.form-group input,
+.form-group textarea,
+.form-group select {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .form-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: flex-end;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
 }
 
-.loading,
-.error {
-  text-align: center;
-  padding: 2rem;
-}
+@media (max-width: 768px) {
+  .tasks-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
 
-.error {
-  color: #c62828;
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<style>
+.tasks-card button {
+    width: auto;
+    padding: .4rem .75rem !important;
 }
 </style>
