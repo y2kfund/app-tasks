@@ -119,7 +119,7 @@
         <div v-else-if="history && history.length > 0" class="history-list">
           <div v-for="item in history" :key="item.id" class="history-item">
             <div class="history-meta">
-              <strong>{{ item.changed_by }}</strong>
+              <strong>{{ getUserName(item.changed_by) }}</strong>
               <span class="history-date">{{ formatDateTime(item.changed_at) }}</span>
             </div>
             <div class="history-change">
@@ -141,7 +141,7 @@
         <div v-else-if="comments && comments.length > 0" class="comments-list">
           <div v-for="comment in comments" :key="comment.id" class="comment-item">
             <div class="comment-meta">
-              <strong>{{ comment.created_by }}</strong>
+              <strong>{{ getUserName(comment.created_by) }}</strong>
               <span class="comment-date">{{ formatDateTime(comment.created_at) }}</span>
             </div>
             <div class="comment-text" v-html="renderMarkdown(comment.comment)"></div>

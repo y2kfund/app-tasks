@@ -1,5 +1,5 @@
-import { inject as ke, computed as de, unref as d, defineComponent as me, ref as D, createElementBlock as l, openBlock as i, createElementVNode as e, createCommentVNode as ce, toDisplayString as f, withDirectives as b, withKeys as X, vModelText as N, vModelSelect as U, normalizeClass as Y, Fragment as M, renderList as O, createTextVNode as q, nextTick as ve, createBlock as ge } from "vue";
-import { useQuery as Z, useQueryClient as oe, useMutation as ie } from "@tanstack/vue-query";
+import { inject as ke, computed as de, unref as d, defineComponent as me, ref as D, createElementBlock as l, openBlock as i, createElementVNode as e, createCommentVNode as ce, toDisplayString as f, withDirectives as b, withKeys as Y, vModelText as N, vModelSelect as U, normalizeClass as Z, Fragment as M, renderList as z, createTextVNode as q, nextTick as ve, createBlock as ge } from "vue";
+import { useQuery as ee, useQueryClient as oe, useMutation as ie } from "@tanstack/vue-query";
 const be = Symbol.for("y2kfund.supabase");
 function K() {
   const a = ke(be, null);
@@ -15,7 +15,7 @@ const T = {
 };
 function _e(a) {
   const p = K();
-  return Z({
+  return ee({
     queryKey: de(() => {
       const o = a ? d(a) : {};
       return T.list(o);
@@ -35,7 +35,7 @@ function _e(a) {
 }
 function we(a) {
   const p = K();
-  return Z({
+  return ee({
     queryKey: T.detail(a),
     queryFn: async () => {
       const { data: o, error: u } = await p.schema("hf").from("tasks").select("*").eq("id", a).single();
@@ -47,7 +47,7 @@ function we(a) {
 }
 function he(a) {
   const p = K();
-  return Z({
+  return ee({
     queryKey: T.comments(a),
     queryFn: async () => {
       const { data: o, error: u } = await p.schema("hf").from("task_comments").select("*").eq("task_id", a).order("created_at", { ascending: !1 });
@@ -59,7 +59,7 @@ function he(a) {
 }
 function $e(a) {
   const p = K();
-  return Z({
+  return ee({
     queryKey: T.history(a),
     queryFn: async () => {
       const { data: o, error: u } = await p.schema("hf").from("task_history").select("*").eq("task_id", a).order("changed_at", { ascending: !1 });
@@ -141,7 +141,7 @@ function Le() {
 }
 function pe() {
   const a = K();
-  return Z({
+  return ee({
     queryKey: ["users"],
     queryFn: async () => {
       const { data: p, error: o } = await a.from("users_view").select("id, email, name").order("email");
@@ -196,7 +196,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
   },
   emits: ["close"],
   setup(a, { emit: p }) {
-    const o = a, u = p, { data: m, isLoading: L, error: _ } = we(o.taskId), { data: V, isLoading: w } = he(o.taskId), { data: k, isLoading: $ } = $e(o.taskId), h = ye(), ae = Te(), C = D(null), g = D(""), S = D(null), B = D(""), { data: z, isLoading: le } = pe();
+    const o = a, u = p, { data: m, isLoading: L, error: _ } = we(o.taskId), { data: V, isLoading: w } = he(o.taskId), { data: k, isLoading: $ } = $e(o.taskId), h = ye(), ae = Te(), C = D(null), g = D(""), S = D(null), B = D(""), { data: j, isLoading: le } = pe();
     async function F(c, s) {
       C.value = c, g.value = s, await ve();
       const r = S.value;
@@ -232,13 +232,13 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
           console.error("Failed to add comment:", c);
         }
     }
-    function ee(c) {
+    function te(c) {
       return new Date(c).toLocaleString();
     }
-    function te(c) {
+    function se(c) {
       return c.replace(/_/g, " ").replace(/\b\w/g, (s) => s.toUpperCase());
     }
-    function se(c) {
+    function ne(c) {
       return c.replace(/!\[.*?\]\((data:image\/[^)]+)\)/g, '<img src="$1" style="max-width: 100%; margin: 0.5rem 0;" />');
     }
     async function ue(c) {
@@ -248,7 +248,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
 `;
       });
     }
-    async function j(c) {
+    async function R(c) {
       await x(c, (s) => {
         B.value += `
 ![image](${s})
@@ -265,18 +265,18 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
             const n = t.getAsFile();
             if (n) {
               const A = new FileReader();
-              A.onload = (H) => {
+              A.onload = (Q) => {
                 var E;
-                const Q = (E = H.target) == null ? void 0 : E.result;
-                s(Q);
+                const O = (E = Q.target) == null ? void 0 : E.result;
+                s(O);
               }, A.readAsDataURL(n);
             }
           }
       }
     }
-    function ne(c) {
-      if (!c || !z.value) return "";
-      const s = z.value.find((r) => r.id === c);
+    function H(c) {
+      if (!c || !j.value) return "";
+      const s = j.value.find((r) => r.id === c);
       return (s == null ? void 0 : s.name) || c;
     }
     return (c, s) => (i(), l("div", Ie, [
@@ -304,8 +304,8 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                 "onUpdate:modelValue": s[2] || (s[2] = (r) => g.value = r),
                 onBlur: I,
                 onKeyup: [
-                  X(I, ["enter"]),
-                  X(P, ["esc"])
+                  Y(I, ["enter"]),
+                  Y(P, ["esc"])
                 ],
                 class: "inline-edit",
                 ref_key: "editInput",
@@ -324,7 +324,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                 key: 0,
                 "onUpdate:modelValue": s[4] || (s[4] = (r) => g.value = r),
                 onBlur: I,
-                onKeyup: X(P, ["esc"]),
+                onKeyup: Y(P, ["esc"]),
                 onPaste: ue,
                 class: "inline-edit",
                 rows: "4",
@@ -335,7 +335,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
               ]) : (i(), l("div", {
                 key: 1,
                 class: "info-value",
-                innerHTML: se(d(m).description || "")
+                innerHTML: ne(d(m).description || "")
               }, null, 8, Ke))
             ], 32)
           ]),
@@ -361,7 +361,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                 [U, g.value]
               ]) : (i(), l("span", {
                 key: 1,
-                class: Y(`status-badge status-${d(m).status}`)
+                class: Z(`status-badge status-${d(m).status}`)
               }, f(d(m).status), 3))
             ], 32)
           ]),
@@ -387,7 +387,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                 [U, g.value]
               ]) : (i(), l("span", {
                 key: 1,
-                class: Y(`priority-badge priority-${d(m).priority}`)
+                class: Z(`priority-badge priority-${d(m).priority}`)
               }, f(d(m).priority), 3))
             ], 32)
           ]),
@@ -407,30 +407,30 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                 disabled: d(le)
               }, [
                 s[20] || (s[20] = e("option", { value: "" }, "-- Unassigned --", -1)),
-                (i(!0), l(M, null, O(d(z), (r) => (i(), l("option", {
+                (i(!0), l(M, null, z(d(j), (r) => (i(), l("option", {
                   key: r.id,
                   value: r.id
                 }, f(r.name), 9, Pe))), 128))
               ], 40, Ne)), [
                 [U, g.value]
-              ]) : (i(), l("div", He, f(ne(d(m).assigned_to) || "-"), 1))
+              ]) : (i(), l("div", He, f(H(d(m).assigned_to) || "-"), 1))
             ], 32)
           ])
         ]),
         e("div", Qe, [
           s[26] || (s[26] = e("h3", null, "History", -1)),
           d($) ? (i(), l("div", Oe, "Loading history...")) : d(k) && d(k).length > 0 ? (i(), l("div", ze, [
-            (i(!0), l(M, null, O(d(k), (r) => (i(), l("div", {
+            (i(!0), l(M, null, z(d(k), (r) => (i(), l("div", {
               key: r.id,
               class: "history-item"
             }, [
               e("div", je, [
-                e("strong", null, f(r.changed_by), 1),
-                e("span", Re, f(ee(r.changed_at)), 1)
+                e("strong", null, f(H(r.changed_by)), 1),
+                e("span", Re, f(te(r.changed_at)), 1)
               ]),
               e("div", Ge, [
                 s[25] || (s[25] = q(" Changed ", -1)),
-                e("strong", null, f(te(r.field_name)), 1),
+                e("strong", null, f(se(r.field_name)), 1),
                 e("span", Je, [
                   s[22] || (s[22] = q(' from "', -1)),
                   e("span", We, f(r.old_value), 1),
@@ -445,17 +445,17 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
         e("div", Ze, [
           s[28] || (s[28] = e("h3", null, "Comments", -1)),
           d(w) ? (i(), l("div", et, "Loading comments...")) : d(V) && d(V).length > 0 ? (i(), l("div", tt, [
-            (i(!0), l(M, null, O(d(V), (r) => (i(), l("div", {
+            (i(!0), l(M, null, z(d(V), (r) => (i(), l("div", {
               key: r.id,
               class: "comment-item"
             }, [
               e("div", st, [
-                e("strong", null, f(r.created_by), 1),
-                e("span", nt, f(ee(r.created_at)), 1)
+                e("strong", null, f(H(r.created_by)), 1),
+                e("span", nt, f(te(r.created_at)), 1)
               ]),
               e("div", {
                 class: "comment-text",
-                innerHTML: se(r.comment)
+                innerHTML: ne(r.comment)
               }, null, 8, ot)
             ]))), 128))
           ])) : (i(), l("div", it, "No comments yet")),
@@ -465,7 +465,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
               placeholder: "Add a comment...",
               rows: "3",
               class: "comment-input",
-              onPaste: j
+              onPaste: R
             }, null, 544), [
               [N, B.value]
             ]),
@@ -485,7 +485,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
   for (const [u, m] of p)
     o[u] = m;
   return o;
-}, ut = /* @__PURE__ */ fe(rt, [["__scopeId", "data-v-ea5c211c"]]), dt = { class: "tasks-card" }, ct = {
+}, ut = /* @__PURE__ */ fe(rt, [["__scopeId", "data-v-6997ec77"]]), dt = { class: "tasks-card" }, ct = {
   key: 0,
   class: "loading"
 }, mt = {
@@ -520,26 +520,26 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
       created_by: o.userId
     }), ae = de(() => ({
       status: L.value || void 0
-    })), { data: C, isLoading: g, error: S } = _e(ae), B = Ce(), z = ye(), le = Le(), { data: F, isLoading: P } = pe(), I = de(() => {
+    })), { data: C, isLoading: g, error: S } = _e(ae), B = Ce(), j = ye(), le = Le(), { data: F, isLoading: P } = pe(), I = de(() => {
       if (!C.value) return [];
       const y = m.value.toLowerCase().trim();
       return y ? C.value.filter((t) => {
-        var R, G, J, W, v;
-        const n = ((R = t.summary) == null ? void 0 : R.toLowerCase()) || "", A = ((G = t.description) == null ? void 0 : G.toLowerCase()) || "", H = ((J = t.status) == null ? void 0 : J.toLowerCase().replace("_", " ")) || "", Q = ((W = t.priority) == null ? void 0 : W.toLowerCase()) || "", E = ((v = t.assigned_to) == null ? void 0 : v.toLowerCase()) || "";
-        return n.includes(y) || A.includes(y) || H.includes(y) || Q.includes(y) || E.includes(y);
+        var G, J, W, X, v;
+        const n = ((G = t.summary) == null ? void 0 : G.toLowerCase()) || "", A = ((J = t.description) == null ? void 0 : J.toLowerCase()) || "", Q = ((W = t.status) == null ? void 0 : W.toLowerCase().replace("_", " ")) || "", O = ((X = t.priority) == null ? void 0 : X.toLowerCase()) || "", E = ((v = t.assigned_to) == null ? void 0 : v.toLowerCase()) || "";
+        return n.includes(y) || A.includes(y) || Q.includes(y) || O.includes(y) || E.includes(y);
       }) : C.value;
     });
     function re(y) {
       return new Date(y).toLocaleDateString();
     }
-    async function ee() {
+    async function te() {
       try {
-        await B.mutateAsync(h.value), te(), _.value = "list";
+        await B.mutateAsync(h.value), se(), _.value = "list";
       } catch (y) {
         console.error("Failed to create task:", y);
       }
     }
-    function te() {
+    function se() {
       h.value = {
         summary: "",
         description: "",
@@ -549,31 +549,31 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
         created_by: o.userId
       };
     }
-    function se() {
-      te(), _.value = "create";
+    function ne() {
+      se(), _.value = "create";
     }
     function ue(y) {
       V.value = y, _.value = "detail";
     }
-    function j() {
+    function R() {
       _.value = "list", V.value = null;
     }
     async function x(y, t) {
       var n;
       w.value = { taskId: y.id, field: t }, k.value = String(y[t] || ""), await ve(), (n = $.value) == null || n.focus();
     }
-    function ne() {
+    function H() {
       w.value = null, k.value = "";
     }
     async function c(y, t) {
       if (w.value)
         try {
-          await z.mutateAsync({
+          await j.mutateAsync({
             id: y.id,
             updates: { [t]: k.value },
             userId: o.userId
             // Add userId
-          }), ne();
+          }), H();
         } catch (n) {
           console.error("Failed to update task:", n);
         }
@@ -601,13 +601,13 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
       ])) : _.value === "list" ? (i(), l("div", vt, [
         e("div", yt, [
           e("h2", {
-            class: Y({ "tasks-header-clickable": o.showHeaderLink }),
+            class: Z({ "tasks-header-clickable": o.showHeaderLink }),
             onClick: t[0] || (t[0] = (n) => o.showHeaderLink && u("navigate"))
           }, " Tasks Management ", 2),
           e("div", pt, [
             e("button", {
               class: "btn btn-primary",
-              onClick: se
+              onClick: ne
             }, [...t[15] || (t[15] = [
               e("span", { class: "icon" }, "➕", -1),
               q(" New Task ", -1)
@@ -673,8 +673,8 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                   ])
                 ])
               ])) : ce("", !0),
-              (i(!0), l(M, null, O(I.value, (n) => {
-                var A, H, Q, E, R, G, J, W;
+              (i(!0), l(M, null, z(I.value, (n) => {
+                var A, Q, O, E, G, J, W, X;
                 return i(), l("tr", {
                   key: n.id
                 }, [
@@ -682,7 +682,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                     class: "editable-cell",
                     onDblclick: (v) => x(n, "summary")
                   }, [
-                    ((A = w.value) == null ? void 0 : A.taskId) === n.id && ((H = w.value) == null ? void 0 : H.field) === "summary" ? b((i(), l("input", {
+                    ((A = w.value) == null ? void 0 : A.taskId) === n.id && ((Q = w.value) == null ? void 0 : Q.field) === "summary" ? b((i(), l("input", {
                       key: 0,
                       ref_for: !0,
                       ref_key: "editInput",
@@ -691,8 +691,8 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                       type: "text",
                       onBlur: (v) => c(n, "summary"),
                       onKeyup: [
-                        X((v) => c(n, "summary"), ["enter"]),
-                        X(ne, ["escape"])
+                        Y((v) => c(n, "summary"), ["enter"]),
+                        Y(H, ["escape"])
                       ]
                     }, null, 40, Ct)), [
                       [N, k.value]
@@ -702,7 +702,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                     class: "editable-cell",
                     onDblclick: (v) => x(n, "status")
                   }, [
-                    ((Q = w.value) == null ? void 0 : Q.taskId) === n.id && ((E = w.value) == null ? void 0 : E.field) === "status" ? b((i(), l("select", {
+                    ((O = w.value) == null ? void 0 : O.taskId) === n.id && ((E = w.value) == null ? void 0 : E.field) === "status" ? b((i(), l("select", {
                       key: 0,
                       "onUpdate:modelValue": t[5] || (t[5] = (v) => k.value = v),
                       onBlur: (v) => c(n, "status"),
@@ -716,14 +716,14 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                       [U, k.value]
                     ]) : (i(), l("span", {
                       key: 1,
-                      class: Y(`status-badge status-${n.status}`)
+                      class: Z(`status-badge status-${n.status}`)
                     }, f(n.status.replace("_", " ")), 3))
                   ], 40, Lt),
                   e("td", {
                     class: "editable-cell",
                     onDblclick: (v) => x(n, "priority")
                   }, [
-                    ((R = w.value) == null ? void 0 : R.taskId) === n.id && ((G = w.value) == null ? void 0 : G.field) === "priority" ? b((i(), l("select", {
+                    ((G = w.value) == null ? void 0 : G.taskId) === n.id && ((J = w.value) == null ? void 0 : J.field) === "priority" ? b((i(), l("select", {
                       key: 0,
                       "onUpdate:modelValue": t[6] || (t[6] = (v) => k.value = v),
                       onBlur: (v) => c(n, "priority"),
@@ -737,14 +737,14 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                       [U, k.value]
                     ]) : (i(), l("span", {
                       key: 1,
-                      class: Y(`priority-badge priority-${n.priority}`)
+                      class: Z(`priority-badge priority-${n.priority}`)
                     }, f(n.priority), 3))
                   ], 40, Dt),
                   e("td", {
                     class: "editable-cell",
                     onDblclick: (v) => x(n, "assigned_to")
                   }, [
-                    ((J = w.value) == null ? void 0 : J.taskId) === n.id && ((W = w.value) == null ? void 0 : W.field) === "assigned_to" ? b((i(), l("select", {
+                    ((W = w.value) == null ? void 0 : W.taskId) === n.id && ((X = w.value) == null ? void 0 : X.field) === "assigned_to" ? b((i(), l("select", {
                       key: 0,
                       "onUpdate:modelValue": t[7] || (t[7] = (v) => k.value = v),
                       onBlur: (v) => c(n, "assigned_to"),
@@ -753,7 +753,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
                       disabled: d(P)
                     }, [
                       t[24] || (t[24] = e("option", { value: "" }, "-- Unassigned --", -1)),
-                      (i(!0), l(M, null, O(d(F), (v) => (i(), l("option", {
+                      (i(!0), l(M, null, z(d(F), (v) => (i(), l("option", {
                         key: v.id,
                         value: v.id
                       }, f(v.name), 9, Ut))), 128))
@@ -783,7 +783,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
         e("div", { class: "form-header" }, [
           e("button", {
             class: "btn btn-back",
-            onClick: j
+            onClick: R
           }, " ← Back to Tasks "),
           t[26] || (t[26] = e("h2", null, "Create New Task", -1))
         ]),
@@ -847,7 +847,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
               disabled: d(P)
             }, [
               t[33] || (t[33] = e("option", { value: "" }, "-- Select User --", -1)),
-              (i(!0), l(M, null, O(d(F), (n) => (i(), l("option", {
+              (i(!0), l(M, null, z(d(F), (n) => (i(), l("option", {
                 key: n.id,
                 value: n.id
               }, f(n.name), 9, jt))), 128))
@@ -858,11 +858,11 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
           e("div", Rt, [
             e("button", {
               class: "btn btn-cancel",
-              onClick: j
+              onClick: R
             }, "Cancel"),
             e("button", {
               class: "btn btn-primary",
-              onClick: ee,
+              onClick: te,
               disabled: !h.value.summary.trim()
             }, " Create Task ", 8, Gt)
           ])
@@ -871,7 +871,7 @@ const Ie = { class: "detail-container" }, De = { class: "detail-header" }, qe = 
         key: 4,
         "task-id": V.value,
         "user-id": a.userId,
-        onClose: j
+        onClose: R
       }, null, 8, ["task-id", "user-id"])) : ce("", !0)
     ]));
   }
