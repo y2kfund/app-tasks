@@ -1,7 +1,7 @@
 <template>
   <div class="tasks-card">
-    <!-- Loading state -->
-    <div v-if="isLoading" class="loading">
+    <!-- Loading state - only show on initial load, not during refetch -->
+    <div v-if="isLoading && !tasks" class="loading">
       <div class="loading-spinner"></div>
       Loading tasks...
     </div>
@@ -46,7 +46,7 @@
         <select v-model="statusFilter" class="filter-select">
           <option value="">All Status</option>
           <option value="open">Open</option>
-          <option value="in_progress">In Progress</option>
+          <option value="in-progress">In Progress</option>
           <option value="completed">Completed</option>
         </select>
       </div>
@@ -65,6 +65,27 @@
             </tr>
           </thead>
           <tbody>
+            <!-- No results message -->
+            <tr v-if="filteredTasks.length === 0" class="no-results">
+              <td colspan="6" class="no-results-cell">
+                <div class="no-results-content">
+                  <span class="no-results-icon">🔍</span>
+                  <p class="no-results-text">
+                    <template v-if="searchQuery">
+                      No tasks found matching "<strong>{{ searchQuery }}</strong>"
+                    </template>
+                    <template v-else-if="statusFilter">
+                      No tasks found with status "<strong>{{ statusFilter.replace('_', ' ') }}</strong>"
+                    </template>
+                    <template v-else>
+                      No tasks found. Click "New Task" to create one.
+                    </template>
+                  </p>
+                </div>
+              </td>
+            </tr>
+            
+            <!-- Task rows -->
             <tr v-for="task in filteredTasks" :key="task.id">
               <td class="editable-cell" @dblclick="startEditCell(task, 'summary')">
                 <input
@@ -273,10 +294,9 @@ const newTask = ref({
   created_by: props.userId,
 })
 
-// Queries - Pass computed filters
+// Only pass status filter to the query - we'll filter search client-side
 const filters = computed(() => ({
   status: statusFilter.value || undefined,
-  search: searchQuery.value || undefined,
 }))
 
 const { data: tasks, isLoading, error } = useTasksQuery(filters)
@@ -284,8 +304,27 @@ const createMutation = useCreateTaskMutation()
 const updateMutation = useUpdateTaskMutation()
 const deleteMutation = useDeleteTaskMutation()
 
-// Computed
-const filteredTasks = computed(() => tasks.value || [])
+// Computed - Filter search client-side to avoid constant refetching
+const filteredTasks = computed(() => {
+  if (!tasks.value) return []
+  
+  const searchTerm = searchQuery.value.toLowerCase().trim()
+  if (!searchTerm) return tasks.value
+  
+  return tasks.value.filter(task => {
+    const summary = task.summary?.toLowerCase() || ''
+    const description = task.description?.toLowerCase() || ''
+    const status = task.status?.toLowerCase().replace('_', ' ') || '' // Convert in_progress to "in progress"
+    const priority = task.priority?.toLowerCase() || ''
+    const assignedTo = task.assigned_to?.toLowerCase() || ''
+    
+    return summary.includes(searchTerm) || 
+           description.includes(searchTerm) || 
+           status.includes(searchTerm) ||
+           priority.includes(searchTerm) ||
+           assignedTo.includes(searchTerm)
+  })
+})
 
 // Methods
 function formatDate(dateString: string) {
@@ -718,6 +757,39 @@ async function deleteTask(taskId: string) {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid #dee2e6;
+}
+
+.no-results {
+  background: transparent !important;
+}
+
+.no-results-cell {
+  padding: 3rem 1rem !important;
+  text-align: center;
+  border-bottom: none !important;
+}
+
+.no-results-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #6c757d;
+}
+
+.no-results-icon {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+.no-results-text {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.no-results-text strong {
+  color: #495057;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {
