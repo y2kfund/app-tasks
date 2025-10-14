@@ -28,7 +28,7 @@
     "@tanstack/vue-query": "^5.0.0",
     "@types/node": "^24.4.0",
     "@vitejs/plugin-vue": "^5.0.0",
-    "@y2kfund/core": "file:../app-core",
+    "@y2kfund/core": "git+https://github.com/y2kfund/app-core.git",
     "typescript": "^5.4.0",
     "vite": "^5.0.0",
     "vite-plugin-dts": "^4.5.4",

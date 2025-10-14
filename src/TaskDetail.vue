@@ -93,16 +93,21 @@
         <div class="info-row">
           <label>Assigned To</label>
           <div @dblclick="startEdit('assigned_to', task.assigned_to || '')">
-            <input
+            <select
               v-if="editingField === 'assigned_to'"
               v-model="editValue"
               @blur="saveEdit"
-              @keyup.enter="saveEdit"
-              @keyup.esc="cancelEdit"
+              @change="saveEdit"
               class="inline-edit"
               ref="editInput"
-            />
-            <div v-else class="info-value">{{ task.assigned_to || '-' }}</div>
+              :disabled="usersLoading"
+            >
+              <option value="">-- Unassigned --</option>
+              <option v-for="user in users" :key="user.id" :value="user.id">
+                {{ user.name }}
+              </option>
+            </select>
+            <div v-else class="info-value">{{ getUserName(task.assigned_to) || '-' }}</div>
           </div>
         </div>
       </div>
@@ -171,6 +176,7 @@ import {
   useTaskHistoryQuery,
   useUpdateTaskMutation,
   useAddCommentMutation,
+  useUsersQuery,
 } from '@y2kfund/core/tasks'
 import type { Task } from '@y2kfund/core/tasks'
 
@@ -196,6 +202,9 @@ const editingField = ref<string | null>(null)
 const editValue = ref('')
 const editInput = ref<HTMLElement | null>(null)
 const newComment = ref('')
+
+// Add users query
+const { data: users, isLoading: usersLoading } = useUsersQuery()
 
 // Methods
 async function startEdit(field: string, currentValue: string) {
@@ -293,6 +302,13 @@ async function handleImagePaste(event: ClipboardEvent, callback: (base64: string
       }
     }
   }
+}
+
+// Add helper function
+function getUserName(userId: string | undefined) {
+  if (!userId || !users.value) return ''
+  const user = users.value.find(u => u.id === userId)
+  return user?.name || userId
 }
 </script>
 

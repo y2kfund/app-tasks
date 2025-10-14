@@ -132,16 +132,20 @@
                 </span>
               </td>
               <td class="editable-cell" @dblclick="startEditCell(task, 'assigned_to')">
-                <input
+                <select
                   v-if="editingCell?.taskId === task.id && editingCell?.field === 'assigned_to'"
-                  ref="editInput"
                   v-model="editValue"
-                  type="text"
                   @blur="saveEdit(task, 'assigned_to')"
-                  @keyup.enter="saveEdit(task, 'assigned_to')"
-                  @keyup.escape="cancelEdit"
-                />
-                <span v-else>{{ task.assigned_to || '-' }}</span>
+                  @change="saveEdit(task, 'assigned_to')"
+                  autofocus
+                  :disabled="usersLoading"
+                >
+                  <option value="">-- Unassigned --</option>
+                  <option v-for="user in users" :key="user.id" :value="user.id">
+                    {{ user.name }}
+                  </option>
+                </select>
+                <span v-else>{{ getUserName(task.assigned_to) || '-' }}</span>
               </td>
               <td>{{ formatDate(task.created_at) }}</td>
               <td class="task-actions">
@@ -219,12 +223,16 @@
 
         <div class="form-group">
           <label for="task-assigned">Assigned To</label>
-          <input
+          <select
             id="task-assigned"
             v-model="newTask.assigned_to"
-            type="text"
-            placeholder="Enter assignee"
-          />
+            :disabled="usersLoading"
+          >
+            <option value="">-- Select User --</option>
+            <option v-for="user in users" :key="user.id" :value="user.id">
+              {{ user.name }}
+            </option>
+          </select>
         </div>
 
         <div class="form-actions">
@@ -257,6 +265,7 @@ import {
   useCreateTaskMutation,
   useUpdateTaskMutation,
   useDeleteTaskMutation,
+  useUsersQuery,
   type Task,
 } from '@y2kfund/core/tasks'
 import TaskDetail from './TaskDetail.vue'
@@ -303,6 +312,9 @@ const { data: tasks, isLoading, error } = useTasksQuery(filters)
 const createMutation = useCreateTaskMutation()
 const updateMutation = useUpdateTaskMutation()
 const deleteMutation = useDeleteTaskMutation()
+
+// Add users query
+const { data: users, isLoading: usersLoading } = useUsersQuery()
 
 // Computed - Filter search client-side to avoid constant refetching
 const filteredTasks = computed(() => {
@@ -402,6 +414,13 @@ async function deleteTask(taskId: string) {
   } catch (err) {
     console.error('Failed to delete task:', err)
   }
+}
+
+// Add helper function to get user name
+function getUserName(userId: string | undefined) {
+  if (!userId || !users.value) return ''
+  const user = users.value.find(u => u.id === userId)
+  return user?.name || userId
 }
 </script>
 

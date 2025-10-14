@@ -18,7 +18,7 @@ close: () => any;
 }, string, PublicProps, Readonly<Props_2> & Readonly<{
 onClose?: (() => any) | undefined;
 }>, {}, {}, {}, {}, string, ComponentProvideOptions, false, {
-editInput: HTMLInputElement;
+editInput: HTMLSelectElement;
 }, HTMLDivElement>;
 
 export declare const Tasks: DefineComponent<Props, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {
