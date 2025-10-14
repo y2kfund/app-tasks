@@ -425,13 +425,13 @@ function getUserName(userId: string | undefined) {
 </script>
 
 <style scoped>
-.tasks-card {
+/*.tasks-card {
   padding: 0.75rem;
   border-radius: 0.75rem;
   border: 1px solid rgba(0,0,0,.1);
   box-shadow: 0 4px 12px rgba(0,0,0,.1);
   background: white;
-}
+}*/
 
 .loading, .error {
   padding: 2rem;

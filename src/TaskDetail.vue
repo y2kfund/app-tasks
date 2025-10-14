@@ -114,24 +114,32 @@
 
       <!-- History Timeline -->
       <div class="history-section">
-        <h3>History</h3>
-        <div v-if="historyLoading" class="loading">Loading history...</div>
-        <div v-else-if="history && history.length > 0" class="history-list">
-          <div v-for="item in history" :key="item.id" class="history-item">
-            <div class="history-meta">
-              <strong>{{ getUserName(item.changed_by) }}</strong>
-              <span class="history-date">{{ formatDateTime(item.changed_at) }}</span>
-            </div>
-            <div class="history-change">
-              Changed <strong>{{ formatFieldName(item.field_name) }}</strong>
-              <span class="change-values">
-                from "<span class="old-value">{{ item.old_value }}</span>"
-                to "<span class="new-value">{{ item.new_value }}</span>"
-              </span>
+        <div class="section-header" @click="isHistoryExpanded = !isHistoryExpanded">
+          <h3>
+            <span class="expand-icon">{{ isHistoryExpanded ? '▼' : '▶' }}</span>
+            History
+          </h3>
+        </div>
+        
+        <div v-if="isHistoryExpanded">
+          <div v-if="historyLoading" class="loading">Loading history...</div>
+          <div v-else-if="history && history.length > 0" class="history-list">
+            <div v-for="item in history" :key="item.id" class="history-item">
+              <div class="history-meta">
+                <strong>{{ getUserName(item.changed_by) }}</strong>
+                <span class="history-date">{{ formatDateTime(item.changed_at) }}</span>
+              </div>
+              <div class="history-change">
+                Changed <strong>{{ formatFieldName(item.field_name) }}</strong>
+                <span class="change-values">
+                  from "<span class="old-value">{{ item.old_value }}</span>"
+                  to "<span class="new-value">{{ item.new_value }}</span>"
+                </span>
+              </div>
             </div>
           </div>
+          <div v-else class="no-history">No history yet</div>
         </div>
-        <div v-else class="no-history">No history yet</div>
       </div>
 
       <!-- Comments Section -->
@@ -202,6 +210,7 @@ const editingField = ref<string | null>(null)
 const editValue = ref('')
 const editInput = ref<HTMLElement | null>(null)
 const newComment = ref('')
+const isHistoryExpanded = ref(false)
 
 // Add users query
 const { data: users, isLoading: usersLoading } = useUsersQuery()
@@ -407,6 +416,33 @@ function getUserName(userId: string | undefined) {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #eee;
+}
+
+.section-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  border-radius: 4px;
+}
+
+.section-header:hover {
+  background-color: #f8f9fa;
+}
+
+.section-header h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expand-icon {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #666;
+  transition: transform 0.2s ease;
 }
 
 .history-list,
