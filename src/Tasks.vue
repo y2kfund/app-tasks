@@ -46,9 +46,13 @@
         <select v-model="statusFilter" class="filter-select">
           <option value="">All Status</option>
           <option value="open">Open</option>
-          <option value="in-progress">In Progress</option>
+          <option value="in_progress">In Progress</option>
           <option value="completed">Completed</option>
         </select>
+        <label class="filter-checkbox">
+          <input type="checkbox" v-model="showArchived" />
+          Show Archived
+        </label>
       </div>
 
       <!-- Tasks Table -->
@@ -65,87 +69,26 @@
             </tr>
           </thead>
           <tbody>
-            <!-- No results message -->
             <tr v-if="filteredTasks.length === 0" class="no-results">
               <td colspan="6" class="no-results-cell">
                 <div class="no-results-content">
-                  <span class="no-results-icon">🔍</span>
-                  <p class="no-results-text">
-                    <template v-if="searchQuery">
-                      No tasks found matching "<strong>{{ searchQuery }}</strong>"
-                    </template>
-                    <template v-else-if="statusFilter">
-                      No tasks found with status "<strong>{{ statusFilter.replace('_', ' ') }}</strong>"
-                    </template>
-                    <template v-else>
-                      No tasks found. Click "New Task" to create one.
-                    </template>
-                  </p>
+                  <span class="no-results-icon">🗂️</span>
+                  <span class="no-results-text">
+                    <strong>No tasks found.</strong>
+                  </span>
                 </div>
               </td>
             </tr>
-            
-            <!-- Task rows -->
             <tr v-for="task in filteredTasks" :key="task.id">
-              <td class="editable-cell" @dblclick="startEditCell(task, 'summary')">
-                <input
-                  v-if="editingCell?.taskId === task.id && editingCell?.field === 'summary'"
-                  ref="editInput"
-                  v-model="editValue"
-                  type="text"
-                  @blur="saveEdit(task, 'summary')"
-                  @keyup.enter="saveEdit(task, 'summary')"
-                  @keyup.escape="cancelEdit"
-                />
-                <span v-else>{{ task.summary }}</span>
+              <td>{{ task.summary }}</td>
+              <td>
+                <span :class="`status-badge status-${task.status}`">{{ task.status }}</span>
               </td>
-              <td class="editable-cell" @dblclick="startEditCell(task, 'status')">
-                <select
-                  v-if="editingCell?.taskId === task.id && editingCell?.field === 'status'"
-                  v-model="editValue"
-                  @blur="saveEdit(task, 'status')"
-                  @change="saveEdit(task, 'status')"
-                  autofocus
-                >
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                </select>
-                <span v-else :class="`status-badge status-${task.status}`">
-                  {{ task.status.replace('_', ' ') }}
-                </span>
+              <td>
+                <span :class="`priority-badge priority-${task.priority}`">{{ task.priority }}</span>
               </td>
-              <td class="editable-cell" @dblclick="startEditCell(task, 'priority')">
-                <select
-                  v-if="editingCell?.taskId === task.id && editingCell?.field === 'priority'"
-                  v-model="editValue"
-                  @blur="saveEdit(task, 'priority')"
-                  @change="saveEdit(task, 'priority')"
-                  autofocus
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-                <span v-else :class="`priority-badge priority-${task.priority}`">
-                  {{ task.priority }}
-                </span>
-              </td>
-              <td class="editable-cell" @dblclick="startEditCell(task, 'assigned_to')">
-                <select
-                  v-if="editingCell?.taskId === task.id && editingCell?.field === 'assigned_to'"
-                  v-model="editValue"
-                  @blur="saveEdit(task, 'assigned_to')"
-                  @change="saveEdit(task, 'assigned_to')"
-                  autofocus
-                  :disabled="usersLoading"
-                >
-                  <option value="">-- Unassigned --</option>
-                  <option v-for="user in users" :key="user.id" :value="user.id">
-                    {{ user.name }}
-                  </option>
-                </select>
-                <span v-else>{{ getUserName(task.assigned_to) || '-' }}</span>
+              <td>
+                {{ getUserName(task.assigned_to) || '-' }}
               </td>
               <td>{{ formatDate(task.created_at) }}</td>
               <td class="task-actions">
@@ -157,11 +100,18 @@
                   👁️
                 </button>
                 <button 
-                  class="btn btn-icon btn-danger" 
-                  @click="deleteTask(task.id)"
-                  title="Delete task"
+                  class="btn btn-icon"
+                  :class="task.archived ? 'btn-success' : 'btn-danger'"
+                  @click="toggleArchiveTask(task)"
+                  :title="task.archived ? 'Unarchive task' : 'Archive task'"
+                  :disabled="archivingTaskId === task.id"
                 >
-                  🗑️
+                  <span v-if="archivingTaskId === task.id">
+                    <span class="loading-spinner" style="display: inline-block; width: 1em; height: 1em; border-width: 2px;"></span>
+                  </span>
+                  <span v-else>
+                    {{ task.archived ? '↩️' : '🗑️' }}
+                  </span>
                 </button>
               </td>
             </tr>
@@ -303,6 +253,9 @@ const newTask = ref({
   created_by: props.userId,
 })
 
+const showArchived = ref(false)
+const archivingTaskId = ref<string | null>(null)
+
 // Only pass status filter to the query - we'll filter search client-side
 const filters = computed(() => ({
   status: statusFilter.value || undefined,
@@ -319,17 +272,15 @@ const { data: users, isLoading: usersLoading } = useUsersQuery()
 // Computed - Filter search client-side to avoid constant refetching
 const filteredTasks = computed(() => {
   if (!tasks.value) return []
-  
   const searchTerm = searchQuery.value.toLowerCase().trim()
-  if (!searchTerm) return tasks.value
-  
-  return tasks.value.filter(task => {
+  let result = tasks.value.filter(task => showArchived.value ? !!task.archived : !task.archived)
+  if (!searchTerm) return result
+  return result.filter(task => {
     const summary = task.summary?.toLowerCase() || ''
     const description = task.description?.toLowerCase() || ''
-    const status = task.status?.toLowerCase().replace('_', ' ') || '' // Convert in_progress to "in progress"
+    const status = task.status?.toLowerCase().replace('_', ' ') || ''
     const priority = task.priority?.toLowerCase() || ''
     const assignedTo = task.assigned_to?.toLowerCase() || ''
-    
     return summary.includes(searchTerm) || 
            description.includes(searchTerm) || 
            status.includes(searchTerm) ||
@@ -406,13 +357,18 @@ async function saveEdit(task: Task, field: keyof Task) {
   }
 }
 
-async function deleteTask(taskId: string) {
-  if (!confirm('Are you sure you want to delete this task?')) return
-
+async function toggleArchiveTask(task: Task) {
+  archivingTaskId.value = task.id
   try {
-    await deleteMutation.mutateAsync(taskId)
+    await updateMutation.mutateAsync({
+      id: task.id,
+      updates: { archived: !task.archived },
+      userId: props.userId,
+    })
   } catch (err) {
-    console.error('Failed to delete task:', err)
+    console.error('Failed to archive/unarchive task:', err)
+  } finally {
+    archivingTaskId.value = null
   }
 }
 
@@ -824,5 +780,12 @@ function getUserName(userId: string | undefined) {
 .tasks-card button {
     width: auto;
     padding: .4rem .75rem !important;
+}
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.95em;
+  color: #555;
 }
 </style>

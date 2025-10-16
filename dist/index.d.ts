@@ -30,9 +30,7 @@ onNavigate?: (() => any) | undefined;
 }>, {
 userId: string;
 showHeaderLink: boolean;
-}, {}, {}, {}, string, ComponentProvideOptions, false, {
-editInput: HTMLInputElement;
-}, HTMLDivElement>;
+}, {}, {}, {}, string, ComponentProvideOptions, false, {}, HTMLDivElement>;
 
 export declare interface TasksProps {
     userId?: string;

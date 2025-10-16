@@ -5,7 +5,13 @@
         ← Back to Tasks
       </button>
       <h2>Task Details</h2>
-      <button class="btn btn-danger" @click="deleteTask">Delete Task</button>
+      <button
+        class="btn"
+        :class="task?.archived ? 'btn-success' : 'btn-danger'"
+        @click="toggleArchiveTask"
+      >
+        {{ task?.archived ? 'Unarchive' : 'Archive' }} Task
+      </button>
     </div>
 
     <div v-if="isLoading" class="loading">Loading task details...</div>
@@ -265,6 +271,19 @@ async function addComment() {
     newComment.value = ''
   } catch (err) {
     console.error('Failed to add comment:', err)
+  }
+}
+
+async function toggleArchiveTask() {
+  if (!task.value) return
+  try {
+    await updateMutation.mutateAsync({
+      id: task.value.id,
+      updates: { archived: !task.value.archived },
+      userId: props.userId,
+    })
+  } catch (err) {
+    console.error('Failed to archive/unarchive task:', err)
   }
 }
 
