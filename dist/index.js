@@ -1,194 +1,191 @@
-import { inject as ye, computed as le, unref as c, defineComponent as de, ref as b, createElementBlock as l, openBlock as i, createElementVNode as e, createCommentVNode as ee, normalizeClass as K, toDisplayString as p, withDirectives as _, withKeys as ie, vModelText as Q, vModelSelect as E, Fragment as J, renderList as W, createTextVNode as V, nextTick as pe, onMounted as fe, watch as ke, createBlock as he, vModelCheckbox as ge } from "vue";
-import { useQuery as G, useQueryClient as te, useMutation as se } from "@tanstack/vue-query";
-const be = Symbol.for("y2kfund.supabase");
+import { inject as vt, computed as it, unref as c, defineComponent as rt, ref as g, createElementBlock as l, openBlock as i, createElementVNode as t, createCommentVNode as tt, toDisplayString as p, normalizeClass as K, withDirectives as $, withKeys as yt, vModelText as R, vModelSelect as E, Fragment as J, renderList as W, createTextVNode as V, nextTick as pt, onMounted as ft, watch as kt, createBlock as ht, vModelCheckbox as gt } from "vue";
+import { useQuery as G, useQueryClient as et, useMutation as st } from "@tanstack/vue-query";
+const bt = Symbol.for("y2kfund.supabase");
 function A() {
-  const o = ye(be, null);
+  const o = vt(bt, null);
   if (!o) throw new Error("[@y2kfund/core] Supabase client not found. Did you install createCore()?");
   return o;
 }
-const $ = {
+const w = {
   all: ["tasks"],
-  list: (o) => [...$.all, "list", o],
-  detail: (o) => [...$.all, "detail", o],
-  comments: (o) => [...$.all, "comments", o],
-  history: (o) => [...$.all, "history", o]
+  list: (o) => [...w.all, "list", o],
+  detail: (o) => [...w.all, "detail", o],
+  comments: (o) => [...w.all, "comments", o],
+  history: (o) => [...w.all, "history", o]
 };
-function we(o) {
+function _t(o) {
   const y = A();
   return G({
-    queryKey: le(() => {
+    queryKey: it(() => {
       const n = o ? c(o) : {};
-      return $.list(n);
+      return w.list(n);
     }),
     queryFn: async () => {
       const n = o ? c(o) : {};
-      let d = y.schema("hf").from("tasks").select("*").order("created_at", { ascending: !1 });
-      if (n != null && n.status && (d = d.eq("status", n.status)), n != null && n.search && n.search.trim()) {
+      let r = y.schema("hf").from("tasks").select("*").order("created_at", { ascending: !1 });
+      if (n != null && n.status && (r = r.eq("status", n.status)), n != null && n.search && n.search.trim()) {
         const f = n.search.trim();
-        d = d.or(`summary.ilike.%${f}%,description.ilike.%${f}%`);
+        r = r.or(`summary.ilike.%${f}%,description.ilike.%${f}%`);
       }
-      const { data: u, error: T } = await d;
-      if (T) throw T;
+      const { data: u, error: L } = await r;
+      if (L) throw L;
       return u;
     }
   });
 }
-function _e(o) {
+function wt(o) {
   const y = A();
   return G({
-    queryKey: $.detail(o),
+    queryKey: w.detail(o),
     queryFn: async () => {
-      const { data: n, error: d } = await y.schema("hf").from("tasks").select("*").eq("id", o).single();
-      if (d) throw d;
+      const { data: n, error: r } = await y.schema("hf").from("tasks").select("*").eq("id", o).single();
+      if (r) throw r;
       return n;
     },
     enabled: !!o
   });
 }
-function $e(o) {
+function $t(o) {
   const y = A();
   return G({
-    queryKey: $.comments(o),
+    queryKey: w.comments(o),
     queryFn: async () => {
-      const { data: n, error: d } = await y.schema("hf").from("task_comments").select("*").eq("task_id", o).order("created_at", { ascending: !1 });
-      if (d) throw d;
+      const { data: n, error: r } = await y.schema("hf").from("task_comments").select("*").eq("task_id", o).order("created_at", { ascending: !1 });
+      if (r) throw r;
       return n;
     },
     enabled: !!o
   });
 }
-function Ce(o) {
+function Ct(o) {
   const y = A();
   return G({
-    queryKey: $.history(o),
+    queryKey: w.history(o),
     queryFn: async () => {
-      const { data: n, error: d } = await y.schema("hf").from("task_history").select("*").eq("task_id", o).order("changed_at", { ascending: !1 });
-      if (d) throw d;
+      const { data: n, error: r } = await y.schema("hf").from("task_history").select("*").eq("task_id", o).order("changed_at", { ascending: !1 });
+      if (r) throw r;
       return n;
     },
     enabled: !!o
   });
 }
-function Ie() {
-  const o = A(), y = te();
-  return se({
+function It() {
+  const o = A(), y = et();
+  return st({
     mutationFn: async (n) => {
-      const { data: d, error: u } = await o.schema("hf").from("tasks").insert(n).select().single();
+      const { data: r, error: u } = await o.schema("hf").from("tasks").insert(n).select().single();
       if (u) throw u;
-      return d;
+      return r;
     },
     onSuccess: () => {
-      y.invalidateQueries({ queryKey: $.all });
+      y.invalidateQueries({ queryKey: w.all });
     }
   });
 }
-function ue() {
-  const o = A(), y = te();
-  return se({
+function dt() {
+  const o = A(), y = et();
+  return st({
     mutationFn: async ({
       id: n,
-      updates: d,
+      updates: r,
       userId: u
     }) => {
-      const { data: T, error: f } = await o.schema("hf").from("tasks").select("*").eq("id", n).single();
+      const { data: L, error: f } = await o.schema("hf").from("tasks").select("*").eq("id", n).single();
       if (f) throw f;
-      const { data: C, error: k } = await o.schema("hf").from("tasks").update(d).eq("id", n).select().single();
+      const { data: C, error: k } = await o.schema("hf").from("tasks").update(r).eq("id", n).select().single();
       if (k) throw k;
-      const q = Object.keys(d).filter((w) => T[w] !== d[w]).map((w) => ({
+      const T = Object.keys(r).filter((b) => L[b] !== r[b]).map((b) => ({
         task_id: n,
-        field_name: w,
-        old_value: String(T[w] || ""),
-        new_value: String(d[w] || ""),
+        field_name: b,
+        old_value: String(L[b] || ""),
+        new_value: String(r[b] || ""),
         changed_by: u
       }));
-      if (q.length > 0) {
-        const { error: w } = await o.schema("hf").from("task_history").insert(q);
-        w && console.error("Failed to save history:", w);
+      if (T.length > 0) {
+        const { error: b } = await o.schema("hf").from("task_history").insert(T);
+        b && console.error("Failed to save history:", b);
       }
       return C;
     },
     onSuccess: (n) => {
-      y.invalidateQueries({ queryKey: $.all }), y.invalidateQueries({ queryKey: $.detail(n.id) }), y.invalidateQueries({ queryKey: $.history(n.id) });
+      y.invalidateQueries({ queryKey: w.all }), y.invalidateQueries({ queryKey: w.detail(n.id) }), y.invalidateQueries({ queryKey: w.history(n.id) });
     }
   });
 }
-function Te() {
-  const o = A(), y = te();
-  return se({
+function Lt() {
+  const o = A(), y = et();
+  return st({
     mutationFn: async (n) => {
-      const { data: d, error: u } = await o.schema("hf").from("task_comments").insert(n).select().single();
+      const { data: r, error: u } = await o.schema("hf").from("task_comments").insert(n).select().single();
       if (u) throw u;
-      return d;
+      return r;
     },
     onSuccess: (n) => {
-      y.invalidateQueries({ queryKey: $.comments(n.task_id) });
+      y.invalidateQueries({ queryKey: w.comments(n.task_id) });
     }
   });
 }
-function Le() {
-  const o = A(), y = te();
-  return se({
+function Tt() {
+  const o = A(), y = et();
+  return st({
     mutationFn: async (n) => {
       await o.schema("hf").from("task_comments").delete().eq("task_id", n), await o.schema("hf").from("task_history").delete().eq("task_id", n);
-      const { error: d } = await o.schema("hf").from("tasks").delete().eq("id", n);
-      if (d) throw d;
+      const { error: r } = await o.schema("hf").from("tasks").delete().eq("id", n);
+      if (r) throw r;
       return n;
     },
     onSuccess: () => {
-      y.invalidateQueries({ queryKey: $.all });
+      y.invalidateQueries({ queryKey: w.all });
     }
   });
 }
-function ce() {
+function ut() {
   const o = A();
   return G({
     queryKey: ["users"],
     queryFn: async () => {
       const { data: y, error: n } = await o.from("users_view").select("id, email, name").order("email");
       if (n) throw n;
-      return (y || []).map((d) => ({
-        id: d.id,
-        email: d.email,
-        name: d.name || d.email
+      return (y || []).map((r) => ({
+        id: r.id,
+        email: r.email,
+        name: r.name || r.email
       }));
     },
     staleTime: 5 * 60 * 1e3
   });
 }
-const Se = { class: "detail-container" }, qe = { class: "detail-header" }, Ae = {
+const qt = { class: "detail-container" }, St = { class: "detail-header" }, At = { class: "header-summary" }, Ut = {
   key: 0,
   class: "loading"
-}, Ue = {
+}, Ft = {
   key: 1,
   class: "error"
-}, Fe = {
+}, Dt = {
   key: 2,
   class: "detail-content"
-}, xe = { class: "task-info" }, De = { class: "info-row" }, Ve = {
+}, xt = { class: "task-info" }, Vt = { class: "info-row" }, Mt = ["innerHTML"], Pt = { class: "info-row" }, Kt = { class: "info-value details-row" }, Et = { class: "detail-item" }, Nt = { class: "detail-item" }, Ht = { class: "detail-item" }, Bt = ["disabled"], Qt = ["value"], zt = {
   key: 1,
   class: "info-value"
-}, Me = { class: "info-row" }, Pe = ["innerHTML"], Ke = { class: "info-row" }, Ee = { class: "info-row" }, Ne = { class: "info-row" }, Be = ["disabled"], He = ["value"], Qe = {
-  key: 1,
-  class: "info-value"
-}, ze = { class: "history-section" }, Oe = { class: "expand-icon" }, je = { key: 0 }, Re = {
+}, Ot = { class: "history-section" }, jt = { class: "expand-icon" }, Rt = { key: 0 }, Jt = {
   key: 0,
   class: "loading"
-}, Je = {
+}, Wt = {
   key: 1,
   class: "history-list"
-}, We = { class: "history-meta" }, Ge = { class: "history-date" }, Xe = { class: "history-change" }, Ye = { class: "change-values" }, Ze = { class: "old-value" }, et = { class: "new-value" }, tt = {
+}, Gt = { class: "history-meta" }, Xt = { class: "history-date" }, Yt = { class: "history-change" }, Zt = { class: "change-values" }, te = { class: "old-value" }, ee = { class: "new-value" }, se = {
   key: 2,
   class: "no-history"
-}, st = { class: "comments-section" }, nt = {
+}, ne = { class: "comments-section" }, ae = {
   key: 0,
   class: "loading"
-}, at = {
+}, oe = {
   key: 1,
   class: "comments-list"
-}, ot = { class: "comment-meta" }, it = { class: "comment-date" }, lt = ["innerHTML"], rt = {
+}, ie = { class: "comment-meta" }, le = { class: "comment-date" }, re = ["innerHTML"], de = {
   key: 2,
   class: "no-comments"
-}, dt = { class: "add-comment" }, ut = ["disabled"], ct = ["disabled"], mt = { key: 0 }, vt = { key: 1 }, yt = /* @__PURE__ */ de({
+}, ue = { class: "add-comment" }, ce = ["disabled"], me = ["disabled"], ve = { key: 0 }, ye = { key: 1 }, pe = /* @__PURE__ */ rt({
   __name: "TaskDetail",
   props: {
     taskId: {},
@@ -196,38 +193,38 @@ const Se = { class: "detail-container" }, qe = { class: "detail-header" }, Ae = 
   },
   emits: ["close"],
   setup(o, { emit: y }) {
-    const n = o, d = y, { data: u, isLoading: T, error: f } = _e(n.taskId), { data: C, isLoading: k } = $e(n.taskId), { data: q, isLoading: w } = Ce(n.taskId), X = ue(), N = Te(), L = b(null), h = b(""), U = b(null), I = b(""), F = b(!1), M = b(!1), { data: B, isLoading: ne } = ce();
-    async function P(m, t) {
-      L.value = m, h.value = t, await pe();
-      const g = U.value;
-      g && typeof g.focus == "function" && g.focus();
+    const n = o, r = y, { data: u, isLoading: L, error: f } = wt(n.taskId), { data: C, isLoading: k } = $t(n.taskId), { data: T, isLoading: b } = Ct(n.taskId), X = dt(), N = Lt(), q = g(null), _ = g(""), M = g(null), I = g(""), U = g(!1), P = g(!1), { data: H, isLoading: nt } = ut();
+    async function B(m, e) {
+      q.value = m, _.value = e, await pt();
+      const h = M.value;
+      h && typeof h.focus == "function" && h.focus();
     }
-    function H() {
-      L.value = null, h.value = "";
+    function Q() {
+      q.value = null, _.value = "";
     }
     async function S() {
-      if (!L.value || !u.value) return;
-      const m = L.value, t = u.value[m];
-      if (h.value !== t)
+      if (!q.value || !u.value) return;
+      const m = q.value, e = u.value[m];
+      if (_.value !== e)
         try {
           await X.mutateAsync({
             id: n.taskId,
-            updates: { [m]: h.value },
+            updates: { [m]: _.value },
             userId: n.userId
           });
-        } catch (g) {
-          console.error("Failed to update task:", g);
+        } catch (h) {
+          console.error("Failed to update task:", h);
         }
-      H();
+      Q();
     }
-    async function ae() {
+    async function at() {
       if (I.value.trim()) {
         if (I.value.trim().startsWith("@analyze")) {
           const m = I.value.trim().replace(/^@analyze\s*/, "");
           if (!m) return;
-          M.value = !0;
+          P.value = !0;
           try {
-            const g = await (await fetch("https://www.y2k.fund/api/ai-analyze-task", {
+            const h = await (await fetch("https://www.y2k.fund/api/ai-analyze-task", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -239,14 +236,14 @@ const Se = { class: "detail-container" }, qe = { class: "detail-header" }, Ae = 
             await N.mutateAsync({
               task_id: n.taskId,
               comment: `**AI Analysis:**
-${g.reply}`,
+${h.reply}`,
               created_by: "ai"
               // or props.userId if you want to attribute to user
             }), I.value = "";
-          } catch (t) {
-            console.error("AI analysis failed:", t);
+          } catch (e) {
+            console.error("AI analysis failed:", e);
           } finally {
-            M.value = !1;
+            P.value = !1;
           }
           return;
         }
@@ -276,287 +273,274 @@ ${g.reply}`,
     function Y(m) {
       return new Date(m).toLocaleString();
     }
-    function oe(m) {
-      return m.replace(/_/g, " ").replace(/\b\w/g, (t) => t.toUpperCase());
+    function ot(m) {
+      return m.replace(/_/g, " ").replace(/\b\w/g, (e) => e.toUpperCase());
     }
     function v(m) {
-      return m.replace(/!\[.*?\]\((data:image\/[^)]+)\)/g, '<img src="$1" style="max-width: 100%; margin: 0.5rem 0;" />');
+      return m.replace(
+        /!\[.*?\]\((https?:\/\/[^)]+|data:image\/[^)]+)\)/g,
+        `<img src="$1" class="img-thumb" data-src="$1" onclick="window.open(this.dataset.src,'_blank')" />`
+      ).replace(/\n/g, "<br/>");
     }
     async function s(m) {
-      await x(m, (t) => {
-        h.value += `
-![image](${t})
+      await F(m, (e) => {
+        _.value += `
+![image](${e})
 `;
       });
     }
     async function a(m) {
-      await x(m, (t) => {
+      await F(m, (e) => {
         I.value += `
-![image](${t})
+![image](${e})
 `;
       });
     }
-    async function x(m, t) {
+    async function F(m, e) {
       var D;
-      const g = (D = m.clipboardData) == null ? void 0 : D.items;
-      if (g) {
-        for (const r of g)
-          if (r.type.indexOf("image") !== -1) {
+      const h = (D = m.clipboardData) == null ? void 0 : D.items;
+      if (h) {
+        for (const x of h)
+          if (x.type.indexOf("image") !== -1) {
             m.preventDefault();
-            const j = r.getAsFile();
-            if (j) {
-              const R = new FileReader();
-              R.onload = (Z) => {
-                var re;
-                const ve = (re = Z.target) == null ? void 0 : re.result;
-                t(ve);
-              }, R.readAsDataURL(j);
+            const d = x.getAsFile();
+            if (d) {
+              const j = new FileReader();
+              j.onload = (Z) => {
+                var lt;
+                const mt = (lt = Z.target) == null ? void 0 : lt.result;
+                e(mt);
+              }, j.readAsDataURL(d);
             }
           }
       }
     }
     function O(m) {
-      if (!m || !B.value) return "";
-      const t = B.value.find((g) => g.id === m);
-      return (t == null ? void 0 : t.name) || m;
+      if (!m || !H.value) return "";
+      const e = H.value.find((h) => h.id === m);
+      return (e == null ? void 0 : e.name) || m;
     }
-    return (m, t) => {
-      var g, D;
-      return i(), l("div", Se, [
-        e("div", qe, [
-          e("button", {
+    return (m, e) => {
+      var h, D, x;
+      return i(), l("div", qt, [
+        t("div", St, [
+          t("button", {
             class: "btn btn-back",
-            onClick: t[0] || (t[0] = (r) => d("close"))
+            onClick: e[0] || (e[0] = (d) => r("close"))
           }, " ← Back to Tasks "),
-          t[13] || (t[13] = e("h2", null, "Task Details", -1)),
-          e("button", {
-            class: K(["btn", (g = c(u)) != null && g.archived ? "btn-success" : "btn-danger"]),
+          t("h2", At, p(((h = c(u)) == null ? void 0 : h.summary) || "Task Details"), 1),
+          t("button", {
+            class: K(["btn", (D = c(u)) != null && D.archived ? "btn-success" : "btn-danger"]),
             onClick: z
-          }, p((D = c(u)) != null && D.archived ? "Unarchive" : "Archive") + " Task ", 3)
+          }, p((x = c(u)) != null && x.archived ? "Unarchive" : "Archive") + " Task ", 3)
         ]),
-        c(T) ? (i(), l("div", Ae, "Loading task details...")) : c(f) ? (i(), l("div", Ue, "Error: " + p(c(f)), 1)) : c(u) ? (i(), l("div", Fe, [
-          e("div", xe, [
-            e("div", De, [
-              t[14] || (t[14] = e("label", null, "Summary", -1)),
-              e("div", {
-                onDblclick: t[2] || (t[2] = (r) => P("summary", c(u).summary))
+        c(L) ? (i(), l("div", Ut, "Loading task details...")) : c(f) ? (i(), l("div", Ft, "Error: " + p(c(f)), 1)) : c(u) ? (i(), l("div", Dt, [
+          t("div", xt, [
+            t("div", Vt, [
+              e[11] || (e[11] = t("label", null, "Description", -1)),
+              t("div", {
+                onDblclick: e[2] || (e[2] = (d) => B("description", c(u).description || ""))
               }, [
-                L.value === "summary" ? _((i(), l("input", {
+                q.value === "description" ? $((i(), l("textarea", {
                   key: 0,
-                  "onUpdate:modelValue": t[1] || (t[1] = (r) => h.value = r),
+                  "onUpdate:modelValue": e[1] || (e[1] = (d) => _.value = d),
                   onBlur: S,
-                  onKeyup: [
-                    ie(S, ["enter"]),
-                    ie(H, ["esc"])
-                  ],
-                  class: "inline-edit",
-                  ref_key: "editInput",
-                  ref: U
-                }, null, 544)), [
-                  [Q, h.value]
-                ]) : (i(), l("div", Ve, p(c(u).summary), 1))
-              ], 32)
-            ]),
-            e("div", Me, [
-              t[15] || (t[15] = e("label", null, "Description", -1)),
-              e("div", {
-                onDblclick: t[4] || (t[4] = (r) => P("description", c(u).description || ""))
-              }, [
-                L.value === "description" ? _((i(), l("textarea", {
-                  key: 0,
-                  "onUpdate:modelValue": t[3] || (t[3] = (r) => h.value = r),
-                  onBlur: S,
-                  onKeyup: ie(H, ["esc"]),
+                  onKeyup: yt(Q, ["esc"]),
                   onPaste: s,
                   class: "inline-edit",
                   rows: "4",
                   ref_key: "editInput",
-                  ref: U
+                  ref: M
                 }, null, 544)), [
-                  [Q, h.value]
+                  [R, _.value]
                 ]) : (i(), l("div", {
                   key: 1,
                   class: "info-value",
                   innerHTML: v(c(u).description || "")
-                }, null, 8, Pe))
+                }, null, 8, Mt))
               ], 32)
             ]),
-            e("div", Ke, [
-              t[17] || (t[17] = e("label", null, "Status", -1)),
-              e("div", {
-                onDblclick: t[6] || (t[6] = (r) => P("status", c(u).status))
-              }, [
-                L.value === "status" ? _((i(), l("select", {
-                  key: 0,
-                  "onUpdate:modelValue": t[5] || (t[5] = (r) => h.value = r),
-                  onBlur: S,
-                  onChange: S,
-                  class: "inline-edit",
-                  ref_key: "editInput",
-                  ref: U
-                }, [...t[16] || (t[16] = [
-                  e("option", { value: "open" }, "Open", -1),
-                  e("option", { value: "in-progress" }, "In Progress", -1),
-                  e("option", { value: "completed" }, "Completed", -1),
-                  e("option", { value: "closed" }, "Closed", -1)
-                ])], 544)), [
-                  [E, h.value]
-                ]) : (i(), l("span", {
-                  key: 1,
-                  class: K(`status-badge status-${c(u).status}`)
-                }, p(c(u).status), 3))
-              ], 32)
-            ]),
-            e("div", Ee, [
-              t[19] || (t[19] = e("label", null, "Priority", -1)),
-              e("div", {
-                onDblclick: t[8] || (t[8] = (r) => P("priority", c(u).priority))
-              }, [
-                L.value === "priority" ? _((i(), l("select", {
-                  key: 0,
-                  "onUpdate:modelValue": t[7] || (t[7] = (r) => h.value = r),
-                  onBlur: S,
-                  onChange: S,
-                  class: "inline-edit",
-                  ref_key: "editInput",
-                  ref: U
-                }, [...t[18] || (t[18] = [
-                  e("option", { value: "low" }, "Low", -1),
-                  e("option", { value: "medium" }, "Medium", -1),
-                  e("option", { value: "high" }, "High", -1),
-                  e("option", { value: "critical" }, "Critical", -1)
-                ])], 544)), [
-                  [E, h.value]
-                ]) : (i(), l("span", {
-                  key: 1,
-                  class: K(`priority-badge priority-${c(u).priority}`)
-                }, p(c(u).priority), 3))
-              ], 32)
-            ]),
-            e("div", Ne, [
-              t[21] || (t[21] = e("label", null, "Assigned To", -1)),
-              e("div", {
-                onDblclick: t[10] || (t[10] = (r) => P("assigned_to", c(u).assigned_to || ""))
-              }, [
-                L.value === "assigned_to" ? _((i(), l("select", {
-                  key: 0,
-                  "onUpdate:modelValue": t[9] || (t[9] = (r) => h.value = r),
-                  onBlur: S,
-                  onChange: S,
-                  class: "inline-edit",
-                  ref_key: "editInput",
-                  ref: U,
-                  disabled: c(ne)
-                }, [
-                  t[20] || (t[20] = e("option", { value: "" }, "-- Unassigned --", -1)),
-                  (i(!0), l(J, null, W(c(B), (r) => (i(), l("option", {
-                    key: r.id,
-                    value: r.id
-                  }, p(r.name), 9, He))), 128))
-                ], 40, Be)), [
-                  [E, h.value]
-                ]) : (i(), l("div", Qe, p(O(c(u).assigned_to) || "-"), 1))
-              ], 32)
+            t("div", Pt, [
+              e[18] || (e[18] = t("label", null, "Details", -1)),
+              t("div", Kt, [
+                t("div", Et, [
+                  e[13] || (e[13] = t("div", { class: "small-label" }, "Status", -1)),
+                  t("div", {
+                    onDblclick: e[4] || (e[4] = (d) => B("status", c(u).status))
+                  }, [
+                    q.value === "status" ? $((i(), l("select", {
+                      key: 0,
+                      "onUpdate:modelValue": e[3] || (e[3] = (d) => _.value = d),
+                      onBlur: S,
+                      onChange: S,
+                      class: "inline-edit",
+                      ref_key: "editInput",
+                      ref: M
+                    }, [...e[12] || (e[12] = [
+                      t("option", { value: "open" }, "Open", -1),
+                      t("option", { value: "in-progress" }, "In Progress", -1),
+                      t("option", { value: "completed" }, "Completed", -1),
+                      t("option", { value: "closed" }, "Closed", -1)
+                    ])], 544)), [
+                      [E, _.value]
+                    ]) : (i(), l("span", {
+                      key: 1,
+                      class: K(`status-badge status-${c(u).status}`)
+                    }, p(c(u).status), 3))
+                  ], 32)
+                ]),
+                t("div", Nt, [
+                  e[15] || (e[15] = t("div", { class: "small-label" }, "Priority", -1)),
+                  t("div", {
+                    onDblclick: e[6] || (e[6] = (d) => B("priority", c(u).priority))
+                  }, [
+                    q.value === "priority" ? $((i(), l("select", {
+                      key: 0,
+                      "onUpdate:modelValue": e[5] || (e[5] = (d) => _.value = d),
+                      onBlur: S,
+                      onChange: S,
+                      class: "inline-edit",
+                      ref_key: "editInput",
+                      ref: M
+                    }, [...e[14] || (e[14] = [
+                      t("option", { value: "low" }, "Low", -1),
+                      t("option", { value: "medium" }, "Medium", -1),
+                      t("option", { value: "high" }, "High", -1),
+                      t("option", { value: "critical" }, "Critical", -1)
+                    ])], 544)), [
+                      [E, _.value]
+                    ]) : (i(), l("span", {
+                      key: 1,
+                      class: K(`priority-badge priority-${c(u).priority}`)
+                    }, p(c(u).priority), 3))
+                  ], 32)
+                ]),
+                t("div", Ht, [
+                  e[17] || (e[17] = t("div", { class: "small-label" }, "Assigned", -1)),
+                  t("div", {
+                    onDblclick: e[8] || (e[8] = (d) => B("assigned_to", c(u).assigned_to || ""))
+                  }, [
+                    q.value === "assigned_to" ? $((i(), l("select", {
+                      key: 0,
+                      "onUpdate:modelValue": e[7] || (e[7] = (d) => _.value = d),
+                      onBlur: S,
+                      onChange: S,
+                      class: "inline-edit",
+                      ref_key: "editInput",
+                      ref: M,
+                      disabled: c(nt)
+                    }, [
+                      e[16] || (e[16] = t("option", { value: "" }, "-- Unassigned --", -1)),
+                      (i(!0), l(J, null, W(c(H), (d) => (i(), l("option", {
+                        key: d.id,
+                        value: d.id
+                      }, p(d.name), 9, Qt))), 128))
+                    ], 40, Bt)), [
+                      [E, _.value]
+                    ]) : (i(), l("div", zt, p(O(c(u).assigned_to) || "-"), 1))
+                  ], 32)
+                ])
+              ])
             ])
           ]),
-          e("div", ze, [
-            e("div", {
+          t("div", Ot, [
+            t("div", {
               class: "section-header",
-              onClick: t[11] || (t[11] = (r) => F.value = !F.value)
+              onClick: e[9] || (e[9] = (d) => U.value = !U.value)
             }, [
-              e("h3", null, [
-                e("span", Oe, p(F.value ? "▼" : "▶"), 1),
-                t[22] || (t[22] = V(" History ", -1))
+              t("h3", null, [
+                t("span", jt, p(U.value ? "▼" : "▶"), 1),
+                e[19] || (e[19] = V(" History ", -1))
               ])
             ]),
-            F.value ? (i(), l("div", je, [
-              c(w) ? (i(), l("div", Re, "Loading history...")) : c(q) && c(q).length > 0 ? (i(), l("div", Je, [
-                (i(!0), l(J, null, W(c(q), (r) => (i(), l("div", {
-                  key: r.id,
+            U.value ? (i(), l("div", Rt, [
+              c(b) ? (i(), l("div", Jt, "Loading history...")) : c(T) && c(T).length > 0 ? (i(), l("div", Wt, [
+                (i(!0), l(J, null, W(c(T), (d) => (i(), l("div", {
+                  key: d.id,
                   class: "history-item"
                 }, [
-                  e("div", We, [
-                    e("strong", null, p(O(r.changed_by)), 1),
-                    e("span", Ge, p(Y(r.changed_at)), 1)
+                  t("div", Gt, [
+                    t("strong", null, p(O(d.changed_by)), 1),
+                    t("span", Xt, p(Y(d.changed_at)), 1)
                   ]),
-                  e("div", Xe, [
-                    t[26] || (t[26] = V(" Changed ", -1)),
-                    e("strong", null, p(oe(r.field_name)), 1),
-                    e("span", Ye, [
-                      t[23] || (t[23] = V(' from "', -1)),
-                      e("span", Ze, p(r.old_value), 1),
-                      t[24] || (t[24] = V('" to "', -1)),
-                      e("span", et, p(r.new_value), 1),
-                      t[25] || (t[25] = V('" ', -1))
+                  t("div", Yt, [
+                    e[23] || (e[23] = V(" Changed ", -1)),
+                    t("strong", null, p(ot(d.field_name)), 1),
+                    t("span", Zt, [
+                      e[20] || (e[20] = V(' from "', -1)),
+                      t("span", te, p(d.old_value), 1),
+                      e[21] || (e[21] = V('" to "', -1)),
+                      t("span", ee, p(d.new_value), 1),
+                      e[22] || (e[22] = V('" ', -1))
                     ])
                   ])
                 ]))), 128))
-              ])) : (i(), l("div", tt, "No history yet"))
-            ])) : ee("", !0)
+              ])) : (i(), l("div", se, "No history yet"))
+            ])) : tt("", !0)
           ]),
-          e("div", st, [
-            t[28] || (t[28] = e("h3", null, "Comments", -1)),
-            c(k) ? (i(), l("div", nt, "Loading comments...")) : c(C) && c(C).length > 0 ? (i(), l("div", at, [
-              (i(!0), l(J, null, W(c(C), (r) => (i(), l("div", {
-                key: r.id,
+          t("div", ne, [
+            e[25] || (e[25] = t("h3", null, "Comments", -1)),
+            c(k) ? (i(), l("div", ae, "Loading comments...")) : c(C) && c(C).length > 0 ? (i(), l("div", oe, [
+              (i(!0), l(J, null, W(c(C), (d) => (i(), l("div", {
+                key: d.id,
                 class: "comment-item"
               }, [
-                e("div", ot, [
-                  e("strong", null, p(O(r.created_by)), 1),
-                  e("span", it, p(Y(r.created_at)), 1)
+                t("div", ie, [
+                  t("strong", null, p(O(d.created_by)), 1),
+                  t("span", le, p(Y(d.created_at)), 1)
                 ]),
-                e("div", {
+                t("div", {
                   class: "comment-text",
-                  innerHTML: v(r.comment)
-                }, null, 8, lt)
+                  innerHTML: v(d.comment)
+                }, null, 8, re)
               ]))), 128))
-            ])) : (i(), l("div", rt, "No comments yet")),
-            e("div", dt, [
-              _(e("textarea", {
-                "onUpdate:modelValue": t[12] || (t[12] = (r) => I.value = r),
+            ])) : (i(), l("div", de, "No comments yet")),
+            t("div", ue, [
+              $(t("textarea", {
+                "onUpdate:modelValue": e[10] || (e[10] = (d) => I.value = d),
                 placeholder: "Add a comment...",
                 rows: "3",
                 class: "comment-input",
                 onPaste: a,
-                disabled: M.value
-              }, null, 40, ut), [
-                [Q, I.value]
+                disabled: P.value
+              }, null, 40, ce), [
+                [R, I.value]
               ]),
-              t[27] || (t[27] = e("small", null, "Paste images from clipboard", -1)),
-              e("button", {
-                onClick: ae,
-                disabled: !I.value.trim() || M.value,
+              e[24] || (e[24] = t("small", null, "Paste images from clipboard", -1)),
+              t("button", {
+                onClick: at,
+                disabled: !I.value.trim() || P.value,
                 class: "btn-primary"
               }, [
-                M.value ? (i(), l("span", mt, "Analyzing...")) : (i(), l("span", vt, "Add Comment"))
-              ], 8, ct)
+                P.value ? (i(), l("span", ve, "Analyzing...")) : (i(), l("span", ye, "Add Comment"))
+              ], 8, me)
             ])
           ])
-        ])) : ee("", !0)
+        ])) : tt("", !0)
       ]);
     };
   }
-}), me = (o, y) => {
+}), ct = (o, y) => {
   const n = o.__vccOpts || o;
-  for (const [d, u] of y)
-    n[d] = u;
+  for (const [r, u] of y)
+    n[r] = u;
   return n;
-}, pt = /* @__PURE__ */ me(yt, [["__scopeId", "data-v-01912df4"]]), ft = { class: "tasks-card" }, kt = {
+}, fe = /* @__PURE__ */ ct(pe, [["__scopeId", "data-v-4d93472c"]]), ke = { class: "tasks-card" }, he = {
   key: 0,
   class: "loading"
-}, ht = {
+}, ge = {
   key: 1,
   class: "error"
-}, gt = {
+}, be = {
   key: 2,
   class: "tasks-container"
-}, bt = { class: "tasks-header" }, wt = { class: "tasks-header-actions" }, _t = { class: "tasks-filters" }, $t = { class: "filter-checkbox" }, Ct = { class: "tasks-table-wrapper" }, It = { class: "tasks-table" }, Tt = {
+}, _e = { class: "tasks-header" }, we = { class: "tasks-header-actions" }, $e = { class: "tasks-filters" }, Ce = { class: "filter-checkbox" }, Ie = { class: "tasks-table-wrapper" }, Le = { class: "tasks-table" }, Te = {
   key: 0,
   class: "no-results"
-}, Lt = { class: "task-actions" }, St = ["onClick"], qt = ["onClick", "title", "disabled"], At = { key: 0 }, Ut = { key: 1 }, Ft = {
+}, qe = { class: "task-actions" }, Se = ["onClick"], Ae = ["onClick", "title", "disabled"], Ue = { key: 0 }, Fe = { key: 1 }, De = {
   key: 3,
   class: "task-form-container"
-}, xt = { class: "form-body" }, Dt = { class: "form-group" }, Vt = { class: "form-group" }, Mt = { class: "form-row" }, Pt = { class: "form-group" }, Kt = { class: "form-group" }, Et = { class: "form-group" }, Nt = ["disabled"], Bt = ["value"], Ht = { class: "form-actions" }, Qt = ["disabled"], zt = /* @__PURE__ */ de({
+}, xe = { class: "form-body" }, Ve = { class: "form-group" }, Me = { class: "form-group" }, Pe = { class: "form-row" }, Ke = { class: "form-group" }, Ee = { class: "form-group" }, Ne = { class: "form-group" }, He = ["disabled"], Be = ["value"], Qe = { class: "form-actions" }, ze = ["disabled"], Oe = /* @__PURE__ */ rt({
   __name: "Tasks",
   props: {
     userId: { default: "default-user" },
@@ -564,42 +548,42 @@ ${g.reply}`,
   },
   emits: ["minimize", "navigate"],
   setup(o, { emit: y }) {
-    const n = o, d = y, u = b(""), T = b(""), f = b("list"), C = b(null);
-    b(null), b(""), b(null);
-    const k = b({
+    const n = o, r = y, u = g(""), L = g(""), f = g("list"), C = g(null);
+    g(null), g(""), g(null);
+    const k = g({
       summary: "",
       description: "",
       status: "open",
       priority: "medium",
       assigned_to: "",
       created_by: n.userId
-    }), q = b(!1), w = b(null);
-    b(null);
-    const X = le(() => ({
-      status: T.value || void 0
-    })), { data: N, isLoading: L, error: h } = we(X), U = Ie(), I = ue();
-    Le();
-    const { data: F, isLoading: M } = ce(), B = le(() => {
+    }), T = g(!1), b = g(null);
+    g(null);
+    const X = it(() => ({
+      status: L.value || void 0
+    })), { data: N, isLoading: q, error: _ } = _t(X), M = It(), I = dt();
+    Tt();
+    const { data: U, isLoading: P } = ut(), H = it(() => {
       if (!N.value) return [];
       const v = u.value.toLowerCase().trim();
-      let s = N.value.filter((a) => q.value ? !!a.archived : !a.archived);
+      let s = N.value.filter((a) => T.value ? !!a.archived : !a.archived);
       return v ? s.filter((a) => {
-        var D, r, j, R, Z;
-        const x = ((D = a.summary) == null ? void 0 : D.toLowerCase()) || "", O = ((r = a.description) == null ? void 0 : r.toLowerCase()) || "", m = ((j = a.status) == null ? void 0 : j.toLowerCase().replace("_", " ")) || "", t = ((R = a.priority) == null ? void 0 : R.toLowerCase()) || "", g = ((Z = a.assigned_to) == null ? void 0 : Z.toLowerCase()) || "";
-        return x.includes(v) || O.includes(v) || m.includes(v) || t.includes(v) || g.includes(v);
+        var D, x, d, j, Z;
+        const F = ((D = a.summary) == null ? void 0 : D.toLowerCase()) || "", O = ((x = a.description) == null ? void 0 : x.toLowerCase()) || "", m = ((d = a.status) == null ? void 0 : d.toLowerCase().replace("_", " ")) || "", e = ((j = a.priority) == null ? void 0 : j.toLowerCase()) || "", h = ((Z = a.assigned_to) == null ? void 0 : Z.toLowerCase()) || "";
+        return F.includes(v) || O.includes(v) || m.includes(v) || e.includes(v) || h.includes(v);
       }) : s;
     });
-    function ne(v) {
+    function nt(v) {
       return new Date(v).toLocaleDateString();
     }
-    async function P() {
+    async function B() {
       try {
-        await U.mutateAsync(k.value), H(), f.value = "list";
+        await M.mutateAsync(k.value), Q(), f.value = "list";
       } catch (v) {
         console.error("Failed to create task:", v);
       }
     }
-    function H() {
+    function Q() {
       k.value = {
         summary: "",
         description: "",
@@ -610,25 +594,25 @@ ${g.reply}`,
       };
     }
     function S() {
-      H(), f.value = "create";
+      Q(), f.value = "create";
     }
-    function ae(v) {
+    function at(v) {
       C.value = v, f.value = "detail";
     }
     function z() {
       f.value = "list", C.value = null;
     }
-    fe(() => {
+    ft(() => {
       const s = new URLSearchParams(window.location.search).get("taskId");
       s && (C.value = s, f.value = "detail");
-    }), ke([C, f], ([v, s]) => {
+    }), kt([C, f], ([v, s]) => {
       const a = new URLSearchParams(window.location.search);
       s === "detail" && v ? a.set("taskId", v) : a.delete("taskId");
-      const x = `${window.location.pathname}?${a.toString()}`;
-      window.history.replaceState({}, "", x);
+      const F = `${window.location.pathname}?${a.toString()}`;
+      window.history.replaceState({}, "", F);
     });
     async function Y(v) {
-      w.value = v.id;
+      b.value = v.id;
       try {
         await I.mutateAsync({
           id: v.id,
@@ -638,236 +622,236 @@ ${g.reply}`,
       } catch (s) {
         console.error("Failed to archive/unarchive task:", s);
       } finally {
-        w.value = null;
+        b.value = null;
       }
     }
-    function oe(v) {
-      if (!v || !F.value) return "";
-      const s = F.value.find((a) => a.id === v);
+    function ot(v) {
+      if (!v || !U.value) return "";
+      const s = U.value.find((a) => a.id === v);
       return (s == null ? void 0 : s.name) || v;
     }
-    return (v, s) => (i(), l("div", ft, [
-      c(L) && !c(N) ? (i(), l("div", kt, [...s[10] || (s[10] = [
-        e("div", { class: "loading-spinner" }, null, -1),
+    return (v, s) => (i(), l("div", ke, [
+      c(q) && !c(N) ? (i(), l("div", he, [...s[10] || (s[10] = [
+        t("div", { class: "loading-spinner" }, null, -1),
         V(" Loading tasks... ", -1)
-      ])])) : c(h) ? (i(), l("div", ht, [
-        s[11] || (s[11] = e("h3", null, "Error loading tasks", -1)),
-        e("p", null, p(c(h)), 1)
-      ])) : f.value === "list" ? (i(), l("div", gt, [
-        e("div", bt, [
-          e("h2", {
+      ])])) : c(_) ? (i(), l("div", ge, [
+        s[11] || (s[11] = t("h3", null, "Error loading tasks", -1)),
+        t("p", null, p(c(_)), 1)
+      ])) : f.value === "list" ? (i(), l("div", be, [
+        t("div", _e, [
+          t("h2", {
             class: K({ "tasks-header-clickable": n.showHeaderLink }),
-            onClick: s[0] || (s[0] = (a) => n.showHeaderLink && d("navigate"))
+            onClick: s[0] || (s[0] = (a) => n.showHeaderLink && r("navigate"))
           }, " Tasks Management ", 2),
-          e("div", wt, [
-            e("button", {
+          t("div", we, [
+            t("button", {
               class: "btn btn-primary",
               onClick: S
             }, [...s[12] || (s[12] = [
-              e("span", { class: "icon" }, "➕", -1),
+              t("span", { class: "icon" }, "➕", -1),
               V(" New Task ", -1)
             ])]),
-            e("button", {
+            t("button", {
               class: "btn btn-minimize",
-              onClick: s[1] || (s[1] = (a) => d("minimize")),
+              onClick: s[1] || (s[1] = (a) => r("minimize")),
               title: "Minimize"
             }, " ➖ ")
           ])
         ]),
-        e("div", _t, [
-          _(e("input", {
+        t("div", $e, [
+          $(t("input", {
             "onUpdate:modelValue": s[2] || (s[2] = (a) => u.value = a),
             type: "text",
             placeholder: "Search tasks...",
             class: "filter-input"
           }, null, 512), [
-            [Q, u.value]
+            [R, u.value]
           ]),
-          _(e("select", {
-            "onUpdate:modelValue": s[3] || (s[3] = (a) => T.value = a),
+          $(t("select", {
+            "onUpdate:modelValue": s[3] || (s[3] = (a) => L.value = a),
             class: "filter-select"
           }, [...s[13] || (s[13] = [
-            e("option", { value: "" }, "All Status", -1),
-            e("option", { value: "open" }, "Open", -1),
-            e("option", { value: "in_progress" }, "In Progress", -1),
-            e("option", { value: "completed" }, "Completed", -1)
+            t("option", { value: "" }, "All Status", -1),
+            t("option", { value: "open" }, "Open", -1),
+            t("option", { value: "in_progress" }, "In Progress", -1),
+            t("option", { value: "completed" }, "Completed", -1)
           ])], 512), [
-            [E, T.value]
+            [E, L.value]
           ]),
-          e("label", $t, [
-            _(e("input", {
+          t("label", Ce, [
+            $(t("input", {
               type: "checkbox",
-              "onUpdate:modelValue": s[4] || (s[4] = (a) => q.value = a)
+              "onUpdate:modelValue": s[4] || (s[4] = (a) => T.value = a)
             }, null, 512), [
-              [ge, q.value]
+              [gt, T.value]
             ]),
             s[14] || (s[14] = V(" Show Archived ", -1))
           ])
         ]),
-        e("div", Ct, [
-          e("table", It, [
-            s[17] || (s[17] = e("thead", null, [
-              e("tr", null, [
-                e("th", null, "Summary"),
-                e("th", null, "Status"),
-                e("th", null, "Priority"),
-                e("th", null, "Assigned To"),
-                e("th", null, "Created"),
-                e("th", null, "Actions")
+        t("div", Ie, [
+          t("table", Le, [
+            s[17] || (s[17] = t("thead", null, [
+              t("tr", null, [
+                t("th", null, "Summary"),
+                t("th", null, "Status"),
+                t("th", null, "Priority"),
+                t("th", null, "Assigned To"),
+                t("th", null, "Created"),
+                t("th", null, "Actions")
               ])
             ], -1)),
-            e("tbody", null, [
-              B.value.length === 0 ? (i(), l("tr", Tt, [...s[15] || (s[15] = [
-                e("td", {
+            t("tbody", null, [
+              H.value.length === 0 ? (i(), l("tr", Te, [...s[15] || (s[15] = [
+                t("td", {
                   colspan: "6",
                   class: "no-results-cell"
                 }, [
-                  e("div", { class: "no-results-content" }, [
-                    e("span", { class: "no-results-icon" }, "🗂️"),
-                    e("span", { class: "no-results-text" }, [
-                      e("strong", null, "No tasks found.")
+                  t("div", { class: "no-results-content" }, [
+                    t("span", { class: "no-results-icon" }, "🗂️"),
+                    t("span", { class: "no-results-text" }, [
+                      t("strong", null, "No tasks found.")
                     ])
                   ])
                 ], -1)
-              ])])) : ee("", !0),
-              (i(!0), l(J, null, W(B.value, (a) => (i(), l("tr", {
+              ])])) : tt("", !0),
+              (i(!0), l(J, null, W(H.value, (a) => (i(), l("tr", {
                 key: a.id
               }, [
-                e("td", null, p(a.summary), 1),
-                e("td", null, [
-                  e("span", {
+                t("td", null, p(a.summary), 1),
+                t("td", null, [
+                  t("span", {
                     class: K(`status-badge status-${a.status}`)
                   }, p(a.status), 3)
                 ]),
-                e("td", null, [
-                  e("span", {
+                t("td", null, [
+                  t("span", {
                     class: K(`priority-badge priority-${a.priority}`)
                   }, p(a.priority), 3)
                 ]),
-                e("td", null, p(oe(a.assigned_to) || "-"), 1),
-                e("td", null, p(ne(a.created_at)), 1),
-                e("td", Lt, [
-                  e("button", {
+                t("td", null, p(ot(a.assigned_to) || "-"), 1),
+                t("td", null, p(nt(a.created_at)), 1),
+                t("td", qe, [
+                  t("button", {
                     class: "btn btn-icon",
-                    onClick: (x) => ae(a.id),
+                    onClick: (F) => at(a.id),
                     title: "View details"
-                  }, " 👁️ ", 8, St),
-                  e("button", {
+                  }, " 👁️ ", 8, Se),
+                  t("button", {
                     class: K(["btn btn-icon", a.archived ? "btn-success" : "btn-danger"]),
-                    onClick: (x) => Y(a),
+                    onClick: (F) => Y(a),
                     title: a.archived ? "Unarchive task" : "Archive task",
-                    disabled: w.value === a.id
+                    disabled: b.value === a.id
                   }, [
-                    w.value === a.id ? (i(), l("span", At, [...s[16] || (s[16] = [
-                      e("span", {
+                    b.value === a.id ? (i(), l("span", Ue, [...s[16] || (s[16] = [
+                      t("span", {
                         class: "loading-spinner",
                         style: { display: "inline-block", width: "1em", height: "1em", "border-width": "2px" }
                       }, null, -1)
-                    ])])) : (i(), l("span", Ut, p(a.archived ? "↩️" : "🗑️"), 1))
-                  ], 10, qt)
+                    ])])) : (i(), l("span", Fe, p(a.archived ? "↩️" : "🗑️"), 1))
+                  ], 10, Ae)
                 ])
               ]))), 128))
             ])
           ])
         ])
-      ])) : f.value === "create" ? (i(), l("div", Ft, [
-        e("div", { class: "form-header" }, [
-          e("button", {
+      ])) : f.value === "create" ? (i(), l("div", De, [
+        t("div", { class: "form-header" }, [
+          t("button", {
             class: "btn btn-back",
             onClick: z
           }, " ← Back to Tasks "),
-          s[18] || (s[18] = e("h2", null, "Create New Task", -1))
+          s[18] || (s[18] = t("h2", null, "Create New Task", -1))
         ]),
-        e("div", xt, [
-          e("div", Dt, [
-            s[19] || (s[19] = e("label", { for: "task-summary" }, "Summary *", -1)),
-            _(e("input", {
+        t("div", xe, [
+          t("div", Ve, [
+            s[19] || (s[19] = t("label", { for: "task-summary" }, "Summary *", -1)),
+            $(t("input", {
               id: "task-summary",
               "onUpdate:modelValue": s[5] || (s[5] = (a) => k.value.summary = a),
               type: "text",
               placeholder: "Enter task summary",
               autofocus: ""
             }, null, 512), [
-              [Q, k.value.summary]
+              [R, k.value.summary]
             ])
           ]),
-          e("div", Vt, [
-            s[20] || (s[20] = e("label", { for: "task-description" }, "Description", -1)),
-            _(e("textarea", {
+          t("div", Me, [
+            s[20] || (s[20] = t("label", { for: "task-description" }, "Description", -1)),
+            $(t("textarea", {
               id: "task-description",
               "onUpdate:modelValue": s[6] || (s[6] = (a) => k.value.description = a),
               placeholder: "Enter task description",
               rows: "6"
             }, null, 512), [
-              [Q, k.value.description]
+              [R, k.value.description]
             ])
           ]),
-          e("div", Mt, [
-            e("div", Pt, [
-              s[22] || (s[22] = e("label", { for: "task-status" }, "Status", -1)),
-              _(e("select", {
+          t("div", Pe, [
+            t("div", Ke, [
+              s[22] || (s[22] = t("label", { for: "task-status" }, "Status", -1)),
+              $(t("select", {
                 id: "task-status",
                 "onUpdate:modelValue": s[7] || (s[7] = (a) => k.value.status = a)
               }, [...s[21] || (s[21] = [
-                e("option", { value: "open" }, "Open", -1),
-                e("option", { value: "in_progress" }, "In Progress", -1),
-                e("option", { value: "completed" }, "Completed", -1)
+                t("option", { value: "open" }, "Open", -1),
+                t("option", { value: "in_progress" }, "In Progress", -1),
+                t("option", { value: "completed" }, "Completed", -1)
               ])], 512), [
                 [E, k.value.status]
               ])
             ]),
-            e("div", Kt, [
-              s[24] || (s[24] = e("label", { for: "task-priority" }, "Priority", -1)),
-              _(e("select", {
+            t("div", Ee, [
+              s[24] || (s[24] = t("label", { for: "task-priority" }, "Priority", -1)),
+              $(t("select", {
                 id: "task-priority",
                 "onUpdate:modelValue": s[8] || (s[8] = (a) => k.value.priority = a)
               }, [...s[23] || (s[23] = [
-                e("option", { value: "low" }, "Low", -1),
-                e("option", { value: "medium" }, "Medium", -1),
-                e("option", { value: "high" }, "High", -1)
+                t("option", { value: "low" }, "Low", -1),
+                t("option", { value: "medium" }, "Medium", -1),
+                t("option", { value: "high" }, "High", -1)
               ])], 512), [
                 [E, k.value.priority]
               ])
             ])
           ]),
-          e("div", Et, [
-            s[26] || (s[26] = e("label", { for: "task-assigned" }, "Assigned To", -1)),
-            _(e("select", {
+          t("div", Ne, [
+            s[26] || (s[26] = t("label", { for: "task-assigned" }, "Assigned To", -1)),
+            $(t("select", {
               id: "task-assigned",
               "onUpdate:modelValue": s[9] || (s[9] = (a) => k.value.assigned_to = a),
-              disabled: c(M)
+              disabled: c(P)
             }, [
-              s[25] || (s[25] = e("option", { value: "" }, "-- Select User --", -1)),
-              (i(!0), l(J, null, W(c(F), (a) => (i(), l("option", {
+              s[25] || (s[25] = t("option", { value: "" }, "-- Select User --", -1)),
+              (i(!0), l(J, null, W(c(U), (a) => (i(), l("option", {
                 key: a.id,
                 value: a.id
-              }, p(a.name), 9, Bt))), 128))
-            ], 8, Nt), [
+              }, p(a.name), 9, Be))), 128))
+            ], 8, He), [
               [E, k.value.assigned_to]
             ])
           ]),
-          e("div", Ht, [
-            e("button", {
+          t("div", Qe, [
+            t("button", {
               class: "btn btn-cancel",
               onClick: z
             }, "Cancel"),
-            e("button", {
+            t("button", {
               class: "btn btn-primary",
-              onClick: P,
+              onClick: B,
               disabled: !k.value.summary.trim()
-            }, " Create Task ", 8, Qt)
+            }, " Create Task ", 8, ze)
           ])
         ])
-      ])) : f.value === "detail" && C.value ? (i(), he(pt, {
+      ])) : f.value === "detail" && C.value ? (i(), ht(fe, {
         key: 4,
         "task-id": C.value,
         "user-id": o.userId,
         onClose: z
-      }, null, 8, ["task-id", "user-id"])) : ee("", !0)
+      }, null, 8, ["task-id", "user-id"])) : tt("", !0)
     ]));
   }
-}), Rt = /* @__PURE__ */ me(zt, [["__scopeId", "data-v-b7f19e01"]]);
+}), Je = /* @__PURE__ */ ct(Oe, [["__scopeId", "data-v-b7f19e01"]]);
 export {
-  pt as TaskDetail,
-  Rt as Tasks
+  fe as TaskDetail,
+  Je as Tasks
 };

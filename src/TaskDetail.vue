@@ -4,7 +4,7 @@
       <button class="btn btn-back" @click="emit('close')">
         ← Back to Tasks
       </button>
-      <h2>Task Details</h2>
+      <h2 class="header-summary">{{ task?.summary || 'Task Details' }}</h2>
       <button
         class="btn"
         :class="task?.archived ? 'btn-success' : 'btn-danger'"
@@ -19,21 +19,7 @@
     <div v-else-if="task" class="detail-content">
       <!-- Task Info -->
       <div class="task-info">
-        <div class="info-row">
-          <label>Summary</label>
-          <div @dblclick="startEdit('summary', task.summary)">
-            <input
-              v-if="editingField === 'summary'"
-              v-model="editValue"
-              @blur="saveEdit"
-              @keyup.enter="saveEdit"
-              @keyup.esc="cancelEdit"
-              class="inline-edit"
-              ref="editInput"
-            />
-            <div v-else class="info-value">{{ task.summary }}</div>
-          </div>
-        </div>
+        <!-- Summary moved to header; removed duplicate summary row -->
 
         <div class="info-row">
           <label>Description</label>
@@ -52,68 +38,74 @@
           </div>
         </div>
 
+        <!-- combined Status / Priority / Assigned To in one row -->
         <div class="info-row">
-          <label>Status</label>
-          <div @dblclick="startEdit('status', task.status)">
-            <select
-              v-if="editingField === 'status'"
-              v-model="editValue"
-              @blur="saveEdit"
-              @change="saveEdit"
-              class="inline-edit"
-              ref="editInput"
-            >
-              <option value="open">Open</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-              <option value="closed">Closed</option>
-            </select>
-            <span v-else :class="`status-badge status-${task.status}`">
-              {{ task.status }}
-            </span>
-          </div>
-        </div>
+          <label>Details</label>
+          <div class="info-value details-row">
+            <div class="detail-item">
+              <div class="small-label">Status</div>
+              <div @dblclick="startEdit('status', task.status)">
+                <select
+                  v-if="editingField === 'status'"
+                  v-model="editValue"
+                  @blur="saveEdit"
+                  @change="saveEdit"
+                  class="inline-edit"
+                  ref="editInput"
+                >
+                  <option value="open">Open</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="closed">Closed</option>
+                </select>
+                <span v-else :class="`status-badge status-${task.status}`">
+                  {{ task.status }}
+                </span>
+              </div>
+            </div>
 
-        <div class="info-row">
-          <label>Priority</label>
-          <div @dblclick="startEdit('priority', task.priority)">
-            <select
-              v-if="editingField === 'priority'"
-              v-model="editValue"
-              @blur="saveEdit"
-              @change="saveEdit"
-              class="inline-edit"
-              ref="editInput"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-            <span v-else :class="`priority-badge priority-${task.priority}`">
-              {{ task.priority }}
-            </span>
-          </div>
-        </div>
+            <div class="detail-item">
+              <div class="small-label">Priority</div>
+              <div @dblclick="startEdit('priority', task.priority)">
+                <select
+                  v-if="editingField === 'priority'"
+                  v-model="editValue"
+                  @blur="saveEdit"
+                  @change="saveEdit"
+                  class="inline-edit"
+                  ref="editInput"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+                <span v-else :class="`priority-badge priority-${task.priority}`">
+                  {{ task.priority }}
+                </span>
+              </div>
+            </div>
 
-        <div class="info-row">
-          <label>Assigned To</label>
-          <div @dblclick="startEdit('assigned_to', task.assigned_to || '')">
-            <select
-              v-if="editingField === 'assigned_to'"
-              v-model="editValue"
-              @blur="saveEdit"
-              @change="saveEdit"
-              class="inline-edit"
-              ref="editInput"
-              :disabled="usersLoading"
-            >
-              <option value="">-- Unassigned --</option>
-              <option v-for="user in users" :key="user.id" :value="user.id">
-                {{ user.name }}
-              </option>
-            </select>
-            <div v-else class="info-value">{{ getUserName(task.assigned_to) || '-' }}</div>
+            <div class="detail-item">
+              <div class="small-label">Assigned</div>
+              <div @dblclick="startEdit('assigned_to', task.assigned_to || '')">
+                <select
+                  v-if="editingField === 'assigned_to'"
+                  v-model="editValue"
+                  @blur="saveEdit"
+                  @change="saveEdit"
+                  class="inline-edit"
+                  ref="editInput"
+                  :disabled="usersLoading"
+                >
+                  <option value="">-- Unassigned --</option>
+                  <option v-for="user in users" :key="user.id" :value="user.id">
+                    {{ user.name }}
+                  </option>
+                </select>
+                <div v-else class="info-value">{{ getUserName(task.assigned_to) || '-' }}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -333,8 +325,15 @@ function formatFieldName(field: string) {
 }
 
 function renderMarkdown(text: string) {
-  // Simple markdown rendering for images
-  return text.replace(/!\[.*?\]\((data:image\/[^)]+)\)/g, '<img src="$1" style="max-width: 100%; margin: 0.5rem 0;" />')
+  // Render images as small thumbnails that open full image in a new tab when clicked.
+  // Use data-src + this.dataset.src to avoid quoting/escaping issues in onclick.
+  return text
+    .replace(
+      /!\[.*?\]\((https?:\/\/[^)]+|data:image\/[^)]+)\)/g,
+      `<img src="$1" class="img-thumb" data-src="$1" onclick="window.open(this.dataset.src,'_blank')" />`
+    )
+    // keep line breaks for simple markdown-like rendering
+    .replace(/\n/g, '<br/>')
 }
 
 async function handlePaste(event: ClipboardEvent) {
@@ -380,35 +379,43 @@ function getUserName(userId: string | undefined) {
 <style scoped>
 .detail-container {
   width: 100%;
+  font-size: 13px; /* overall slightly smaller */
 }
 
 .detail-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #dee2e6;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .detail-header h2 {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #333;
   flex: 1;
-  text-align: center;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-summary {
+  padding: 0 0.5rem;
 }
 
 .btn-back {
   background: #f8f9fa;
   color: #495057;
   border: 1px solid #dee2e6;
-  padding: 0.5rem 1rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 6px;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .btn-back:hover {
@@ -416,75 +423,106 @@ function getUserName(userId: string | undefined) {
 }
 
 .detail-content {
-  padding: 0 0.5rem;
+  padding: 0 0.25rem;
 }
 
 .task-info {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .info-row {
   display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 1rem;
-  padding: 0.25rem 0;
-  border-bottom: 1px solid #eee;
+  grid-template-columns: 120px 1fr;
+  gap: 0.5rem;
+  padding: 0.125rem 0;
+  border-bottom: 1px solid #f2f2f2;
 }
 
 .info-row label {
   font-weight: 600;
   color: #666;
+  font-size: 12px;
+  padding-top: 0.4rem;
 }
 
 .info-value {
   color: #333;
+  font-size: 13px;
+  padding: 0.25rem 0;
 }
 
 .inline-edit {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #007bff;
+  padding: 0.45rem;
+  border: 1px solid #bcd0ff;
   border-radius: 4px;
   font-family: inherit;
+  font-size: 13px;
+}
+
+.details-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.detail-item {
+  flex: 1 1 200px; /* allow items to shrink on small screens */
+  min-width: 0;
+}
+
+.detail-item .small-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 0.12rem;
+  display: block;
+}
+
+/* tighten select/inline-edit height in the compact row */
+.details-row .inline-edit {
+  padding: 0.35rem;
+  font-size: 13px;
 }
 
 .status-badge,
 .priority-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.875rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.78rem;
   font-weight: 500;
   display: inline-block;
 }
 
-.status-open { background: #e3f2fd; color: #1976d2; }
-.status-in-progress { background: #fff3e0; color: #f57c00; }
-.status-completed { background: #e8f5e9; color: #388e3c; }
-.status-closed { background: #f5f5f5; color: #757575; }
+.status-open { background: #eaf4ff; color: #1976d2; }
+.status-in-progress { background: #fff8ef; color: #f57c00; }
+.status-completed { background: #f0fbf4; color: #388e3c; }
+.status-closed { background: #fafafa; color: #757575; }
 
-.priority-low { background: #e8f5e9; color: #388e3c; }
-.priority-medium { background: #fff3e0; color: #f57c00; }
-.priority-high { background: #ffe0b2; color: #e64a19; }
-.priority-critical { background: #ffebee; color: #c62828; }
+.priority-low { background: #f0fbf4; color: #388e3c; }
+.priority-medium { background: #fff8ef; color: #f57c00; }
+.priority-high { background: #fff4e8; color: #e64a19; }
+.priority-critical { background: #fff0f0; color: #c62828; }
 
 .history-section,
 .comments-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f2f2f2;
 }
 
 .section-header {
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.2s ease;
-  padding: 0.5rem;
-  margin: -0.5rem;
+  transition: background-color 0.15s ease;
+  padding: 0.25rem;
+  margin: -0.25rem 0 0;
   border-radius: 4px;
 }
 
 .section-header:hover {
-  background-color: #f8f9fa;
+  background-color: #fafafa;
 }
 
 .section-header h3 {
@@ -492,46 +530,48 @@ function getUserName(userId: string | undefined) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 13px;
 }
 
 .expand-icon {
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #666;
-  transition: transform 0.2s ease;
+  transition: transform 0.15s ease;
 }
 
 .history-list,
 .comments-list {
-  margin-top: 1rem;
+  margin-top: 0.6rem;
 }
 
 .history-item,
 .comment-item {
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  padding: 0.6rem;
+  background: #fbfbfb;
+  border-radius: 6px;
+  margin-bottom: 0.6rem;
+  font-size: 13px;
 }
 
 .history-meta,
 .comment-meta {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   color: #666;
-  font-size: 0.875rem;
+  font-size: 12px;
 }
 
 .history-change {
   color: #333;
-  font-size: 0.9rem;
+  font-size: 12.5px;
 }
 
 .change-values {
   display: block;
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
+  margin-top: 0.18rem;
+  font-size: 12px;
 }
 
 .old-value {
@@ -546,29 +586,32 @@ function getUserName(userId: string | undefined) {
 .comment-text {
   color: #333;
   white-space: pre-wrap;
+  font-size: 13px;
 }
 
 .add-comment {
-  margin-top: 1rem;
+  margin-top: 0.6rem;
 }
 
 .comment-input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
+  padding: 0.55rem;
+  border: 1px solid #e6e6e6;
   border-radius: 4px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   font-family: inherit;
+  font-size: 13px;
 }
 
 .btn-primary {
   background: #007bff;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 4px;
   cursor: pointer;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 13px;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -576,21 +619,45 @@ function getUserName(userId: string | undefined) {
 }
 
 .btn-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .loading,
 .no-history,
 .no-comments {
-  color: #999;
+  color: #888;
   text-align: center;
-  padding: 1rem;
+  padding: 0.6rem;
+  font-size: 13px;
 }
 
 .error {
   color: #c62828;
   text-align: center;
-  padding: 1rem;
+  padding: 0.6rem;
+  font-size: 13px;
+}
+</style>
+
+<style>
+.img-thumb {
+  max-width: 120px;
+  max-height: 90px;
+  object-fit: cover;
+  margin: 0.25rem 0;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  display: inline-block;
+}
+
+/* ensure any rendered images inside description/comments are constrained */
+.info-value .img-thumb,
+.comment-text .img-thumb {
+  vertical-align: middle;
+}
+.comments-section h3 {
+    margin: 0;
 }
 </style>
