@@ -525,7 +525,7 @@ ${h.reply}`,
   for (const [r, u] of y)
     n[r] = u;
   return n;
-}, fe = /* @__PURE__ */ ct(pe, [["__scopeId", "data-v-4d93472c"]]), ke = { class: "tasks-card" }, he = {
+}, fe = /* @__PURE__ */ ct(pe, [["__scopeId", "data-v-59cbdd1e"]]), ke = { class: "tasks-card" }, he = {
   key: 0,
   class: "loading"
 }, ge = {

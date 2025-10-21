@@ -468,7 +468,7 @@ function getUserName(userId: string | undefined) {
 }
 
 .detail-item {
-  flex: 1 1 200px; /* allow items to shrink on small screens */
+  flex: 1 1 100px; /* allow items to shrink on small screens */
   min-width: 0;
 }
 
