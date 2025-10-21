@@ -171,10 +171,12 @@
             rows="3"
             class="comment-input"
             @paste="handleCommentPaste"
+            :disabled="aiLoading"
           ></textarea>
           <small>Paste images from clipboard</small>
-          <button @click="addComment" :disabled="!newComment.trim()" class="btn-primary">
-            Add Comment
+          <button @click="addComment" :disabled="!newComment.trim() || aiLoading" class="btn-primary">
+            <span v-if="aiLoading">Analyzing...</span>
+            <span v-else>Add Comment</span>
           </button>
         </div>
       </div>
@@ -217,6 +219,7 @@ const editValue = ref('')
 const editInput = ref<HTMLElement | null>(null)
 const newComment = ref('')
 const isHistoryExpanded = ref(false)
+const aiLoading = ref(false)
 
 // Add users query
 const { data: users, isLoading: usersLoading } = useUsersQuery()
@@ -261,7 +264,41 @@ async function saveEdit() {
 
 async function addComment() {
   if (!newComment.value.trim()) return
-  
+
+  // Check for @analyze
+  if (newComment.value.trim().startsWith('@analyze')) {
+    const question = newComment.value.trim().replace(/^@analyze\s*/, '')
+    if (!question) return
+
+    aiLoading.value = true
+    try {
+      // Call AI API
+      const res = await fetch('https://www.y2k.fund/api/ai-analyze-task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId: props.taskId,
+          userId: props.userId,
+          question,
+        }),
+      })
+      const data = await res.json()
+      // Add AI response as a comment
+      await addCommentMutation.mutateAsync({
+        task_id: props.taskId,
+        comment: `**AI Analysis:**\n${data.reply}`,
+        created_by: 'ai', // or props.userId if you want to attribute to user
+      })
+      newComment.value = ''
+    } catch (err) {
+      console.error('AI analysis failed:', err)
+    } finally {
+      aiLoading.value = false
+    }
+    return
+  }
+
+  // Normal comment
   try {
     await addCommentMutation.mutateAsync({
       task_id: props.taskId,

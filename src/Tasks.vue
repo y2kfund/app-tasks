@@ -209,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import {
   useTasksQuery,
   useCreateTaskMutation,
@@ -255,6 +255,7 @@ const newTask = ref({
 
 const showArchived = ref(false)
 const archivingTaskId = ref<string | null>(null)
+const routeTaskId = ref<string | null>(null)
 
 // Only pass status filter to the query - we'll filter search client-side
 const filters = computed(() => ({
@@ -329,6 +330,28 @@ function backToList() {
   currentView.value = 'list'
   selectedTaskId.value = null
 }
+
+// On mount, check for taskId in URL
+onMounted(() => {
+  const params = new URLSearchParams(window.location.search)
+  const tid = params.get('taskId')
+  if (tid) {
+    selectedTaskId.value = tid
+    currentView.value = 'detail'
+  }
+})
+
+// Watch selectedTaskId and currentView to update URL
+watch([selectedTaskId, currentView], ([tid, view]) => {
+  const params = new URLSearchParams(window.location.search)
+  if (view === 'detail' && tid) {
+    params.set('taskId', tid)
+  } else {
+    params.delete('taskId')
+  }
+  const newUrl = `${window.location.pathname}?${params.toString()}`
+  window.history.replaceState({}, '', newUrl)
+})
 
 async function startEditCell(task: Task, field: keyof Task) {
   editingCell.value = { taskId: task.id, field }
