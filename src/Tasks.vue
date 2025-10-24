@@ -22,8 +22,8 @@
           Tasks Management
         </h2>
         <div class="tasks-header-actions">
-          <button class="btn btn-primary" @click="showCreateView">
-            <span class="icon">➕</span> New Task
+          <button class="btn btn-add" @click="showCreateView">
+            <span class="icon">➕</span>
           </button>
           <button 
             class="btn btn-minimize" 

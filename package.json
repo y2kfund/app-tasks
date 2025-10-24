@@ -45,5 +45,8 @@
     "_comment": "deps:dev installs local package temporarily (--no-save), deps:prod ensures Git repo is used",
     "deps:dev": "npm install @y2kfund/core@file:../app-core --no-save",
     "deps:prod": "npm install @y2kfund/core@git+https://github.com/y2kfund/app-core.git --no-save"
+  },
+  "dependencies": {
+    "marked": "^16.4.1"
   }
 }

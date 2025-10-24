@@ -34,7 +34,7 @@
               rows="4"
               ref="editInput"
             />
-            <div v-else class="info-value" v-html="renderMarkdown(task.description || '')"></div>
+            <div v-else class="info-value" v-html="extractImageFromContent(task.description || '')"></div>
           </div>
         </div>
 
@@ -150,7 +150,16 @@
               <strong>{{ getUserName(comment.created_by) }}</strong>
               <span class="comment-date">{{ formatDateTime(comment.created_at) }}</span>
             </div>
-            <div class="comment-text" v-html="renderMarkdown(comment.comment)"></div>
+            <div
+              class="comment-text"
+              v-if="comment.created_by === 'Analyze'"
+              v-html="renderMarkdown(comment.comment)"
+            ></div>
+            <div
+              class="comment-text"
+              v-else
+              v-html="extractImageFromContent(comment.comment)"
+            ></div>
           </div>
         </div>
         <div v-else class="no-comments">No comments yet</div>
@@ -187,6 +196,7 @@ import {
   useUsersQuery,
 } from '@y2kfund/core/tasks'
 import type { Task } from '@y2kfund/core/tasks'
+import { marked } from 'marked'
 
 interface Props {
   taskId: string
@@ -278,8 +288,8 @@ async function addComment() {
       // Add AI response as a comment
       await addCommentMutation.mutateAsync({
         task_id: props.taskId,
-        comment: `**AI Analysis:**\n${data.reply}`,
-        created_by: 'ai', // or props.userId if you want to attribute to user
+        comment: `${data.reply}`,
+        created_by: 'Analyze', // or props.userId if you want to attribute to user
       })
       newComment.value = ''
     } catch (err) {
@@ -324,7 +334,7 @@ function formatFieldName(field: string) {
   return field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
-function renderMarkdown(text: string) {
+function extractImageFromContent(text: string) {
   // Render images as small thumbnails that open full image in a new tab when clicked.
   // Use data-src + this.dataset.src to avoid quoting/escaping issues in onclick.
   return text
@@ -373,6 +383,10 @@ function getUserName(userId: string | undefined) {
   if (!userId || !users.value) return ''
   const user = users.value.find(u => u.id === userId)
   return user?.name || userId
+}
+
+function renderMarkdown(md: string) {
+  return marked.parse(md)
 }
 </script>
 
@@ -585,7 +599,6 @@ function getUserName(userId: string | undefined) {
 
 .comment-text {
   color: #333;
-  white-space: pre-wrap;
   font-size: 13px;
 }
 
@@ -659,5 +672,21 @@ function getUserName(userId: string | undefined) {
 }
 .comments-section h3 {
     margin: 0;
+}
+.comment-text p, .comment-text h1, .comment-text h2, .comment-text h3, .comment-text ul, .comment-text ol {
+    margin: 0;
+    line-height: 1.5rem;
+}
+
+.comment-text h1 {
+    font-size: 1.1rem;
+}
+
+.comment-text h2 {
+    font-size: 1rem;
+}
+
+.comment-text h3 {
+    font-size: 0.9rem;
 }
 </style>
