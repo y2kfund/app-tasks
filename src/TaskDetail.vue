@@ -4,7 +4,27 @@
       <button class="btn btn-back" @click="emit('close')">
         ← Back to Tasks
       </button>
-      <h2 class="header-summary">{{ task?.summary || 'Task Details' }}</h2>
+      <div style="flex:1;">
+        <h2
+          v-if="editingField !== 'summary'"
+          class="header-summary"
+          @dblclick="startEdit('summary', task?.summary || '')"
+          :title="'Double-click to edit summary'"
+        >
+          {{ task?.summary || 'Task Details' }}
+        </h2>
+        <input
+          v-else
+          v-model="editValue"
+          @blur="saveEdit"
+          @keyup.esc="cancelEdit"
+          @keyup.enter="saveEdit"
+          ref="editInput"
+          class="inline-edit"
+          style="font-size:1rem;width:100%;"
+          :placeholder="'Task Summary'"
+        />
+      </div>
       <button
         class="btn"
         :class="task?.archived ? 'btn-success' : 'btn-danger'"
@@ -13,6 +33,7 @@
         {{ task?.archived ? 'Unarchive' : 'Archive' }} Task
       </button>
     </div>
+    <div v-if="savedMessage" class="saved-message">{{ savedMessage }}</div>
 
     <div v-if="isLoading" class="loading">Loading task details...</div>
     <div v-else-if="error" class="error">Error: {{ error }}</div>
@@ -205,6 +226,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits<{ close: [] }>()
+const savedMessage = ref('')
 
 // Queries
 const { data: task, isLoading, error } = useTaskQuery(props.taskId)
@@ -256,6 +278,10 @@ async function saveEdit() {
         updates: { [field]: editValue.value },
         userId: props.userId,
       })
+      savedMessage.value = 'Saved!'
+      setTimeout(() => {
+        savedMessage.value = ''
+      }, 1200)
     } catch (err) {
       console.error('Failed to update task:', err)
     }
@@ -688,5 +714,16 @@ function renderMarkdown(md: string) {
 
 .comment-text h3 {
     font-size: 0.9rem;
+}
+.saved-message {
+  color: #388e3c;
+  background: #f0fbf4;
+  border-radius: 4px;
+  padding: 0.25rem 0.75rem;
+  margin: 0.5rem 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  transition: opacity 0.3s;
 }
 </style>
