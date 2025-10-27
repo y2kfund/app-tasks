@@ -170,17 +170,30 @@
             <div class="comment-meta">
               <strong>{{ getUserName(comment.created_by) }}</strong>
               <span class="comment-date">{{ formatDateTime(comment.created_at) }}</span>
+              <div class="comment-menu" v-if="comment.created_by === props.userId">
+                <button class="menu-btn" @click="toggleCommentMenu(comment.id)">⋮</button>
+                <div v-if="openCommentMenu === comment.id" class="menu-dropdown">
+                  <button @click="startEditComment(comment)">Edit</button>
+                </div>
+              </div>
             </div>
-            <div
-              class="comment-text"
-              v-if="comment.created_by === 'Analyze'"
-              v-html="renderMarkdown(comment.comment)"
-            ></div>
-            <div
-              class="comment-text"
-              v-else
-              v-html="extractImageFromContent(comment.comment)"
-            ></div>
+            <div v-if="editingCommentId === comment.id">
+              <textarea v-model="editCommentValue" rows="3" class="comment-input"></textarea>
+              <button class="btn-primary" @click="saveEditComment(comment.id)">Save</button>
+              <button class="btn" @click="cancelEditComment">Cancel</button>
+            </div>
+            <div v-else>
+              <div
+                class="comment-text"
+                v-if="comment.created_by === 'Analyze'"
+                v-html="renderMarkdown(comment.comment)"
+              ></div>
+              <div
+                class="comment-text"
+                v-else
+                v-html="extractImageFromContent(comment.comment)"
+              ></div>
+            </div>
           </div>
         </div>
         <div v-else class="no-comments">No comments yet</div>
@@ -214,6 +227,7 @@ import {
   useTaskHistoryQuery,
   useUpdateTaskMutation,
   useAddCommentMutation,
+  useUpdateCommentMutation,
   useUsersQuery,
 } from '@y2kfund/core/tasks'
 import type { Task } from '@y2kfund/core/tasks'
@@ -227,11 +241,15 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<{ close: [] }>()
 const savedMessage = ref('')
+const editingCommentId = ref<string | null>(null)
+const editCommentValue = ref('')
+const openCommentMenu = ref<string | null>(null)
 
 // Queries
 const { data: task, isLoading, error } = useTaskQuery(props.taskId)
 const { data: comments, isLoading: commentsLoading } = useTaskCommentsQuery(props.taskId)
 const { data: history, isLoading: historyLoading } = useTaskHistoryQuery(props.taskId)
+const updateCommentMutation = useUpdateCommentMutation()
 
 // Mutations
 const updateMutation = useUpdateTaskMutation()
@@ -413,6 +431,35 @@ function getUserName(userId: string | undefined) {
 
 function renderMarkdown(md: string) {
   return marked.parse(md)
+}
+
+function toggleCommentMenu(id: string) {
+  openCommentMenu.value = openCommentMenu.value === id ? null : id
+}
+
+function startEditComment(comment: any) {
+  editingCommentId.value = comment.id
+  editCommentValue.value = comment.comment
+  openCommentMenu.value = null
+}
+
+function cancelEditComment() {
+  editingCommentId.value = null
+  editCommentValue.value = ''
+}
+
+async function saveEditComment(commentId: string) {
+  if (!editCommentValue.value.trim()) return
+  try {
+    await updateCommentMutation.mutateAsync({
+      id: commentId,
+      comment: editCommentValue.value,
+    })
+    editingCommentId.value = null
+    editCommentValue.value = ''
+  } catch (err) {
+    console.error('Failed to edit comment:', err)
+  }
 }
 </script>
 
@@ -725,5 +772,47 @@ function renderMarkdown(md: string) {
   font-size: 13px;
   font-weight: 500;
   transition: opacity 0.3s;
+}
+.comment-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.3rem;
+}
+
+.menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 1.2rem;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  z-index: 10;
+  min-width: 80px;
+}
+
+.menu-dropdown button {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.menu-dropdown button:hover {
+  background: #f5f5f5;
+}
+.comment-menu button {
+    color: #000;
 }
 </style>
