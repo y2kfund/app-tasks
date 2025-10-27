@@ -1717,7 +1717,7 @@ const ys = { class: "detail-container" }, xs = { class: "detail-header" }, ws = 
   for (const [n, r] of e)
     t[n] = r;
   return t;
-}, mn = /* @__PURE__ */ gt(fn, [["__scopeId", "data-v-5ebc302a"]]), bn = { class: "tasks-card" }, yn = {
+}, mn = /* @__PURE__ */ gt(fn, [["__scopeId", "data-v-513d9a9f"]]), bn = { class: "tasks-card" }, yn = {
   key: 0,
   class: "loading"
 }, xn = {
