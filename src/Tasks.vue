@@ -31,7 +31,7 @@
           <button 
             class="btn btn-minimize" 
             @click="emit('minimize')"
-            title="Minimize"
+            title="Close"
           >
             X
           </button>
@@ -397,19 +397,27 @@ onMounted(() => {
   }
   appName.value = parseAppNameFromUrl()
 
+  // Restore status filter from URL
+  if (params.has('task_status')) {
+    statusFilter.value = params.get('task_status') ?? ''
+  }
+
   window.addEventListener('popstate', () => {
     appName.value = parseAppNameFromUrl()
+    const params = new URLSearchParams(window.location.search)
+    statusFilter.value = params.has('task_status') ? (params.get('task_status') ?? '') : 'not_completed'
   })
 })
 
 // Watch selectedTaskId and currentView to update URL
-watch([selectedTaskId, currentView], ([tid, view]) => {
+watch([selectedTaskId, currentView, statusFilter], ([tid, view, status]) => {
   const params = new URLSearchParams(window.location.search)
   if (view === 'detail' && tid) {
     params.set('taskId', tid)
   } else {
     params.delete('taskId')
   }
+  params.set('task_status', status)
   const newUrl = `${window.location.pathname}?${params.toString()}`
   window.history.replaceState({}, '', newUrl)
 })
