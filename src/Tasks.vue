@@ -47,9 +47,10 @@
           class="filter-input"
         />
         <select v-model="statusFilter" class="filter-select">
+          <option value="not_completed">All not completed</option>
           <option value="">All Status</option>
           <option value="open">Open</option>
-          <option value="in_progress">In Progress</option>
+          <option value="in-progress">In Progress</option>
           <option value="completed">Completed</option>
         </select>
         <label class="filter-checkbox">
@@ -159,7 +160,7 @@
             <label for="task-status">Status</label>
             <select id="task-status" v-model="newTask.status">
               <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
+              <option value="in-progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
           </div>
@@ -251,7 +252,7 @@ const emit = defineEmits<{
 
 // State
 const searchQuery = ref('')
-const statusFilter = ref('')
+const statusFilter = ref('not_completed')
 const currentView = ref<'list' | 'detail' | 'create'>('list')
 const selectedTaskId = ref<string | null>(null)
 const editingCell = ref<{ taskId: string; field: string } | null>(null)
@@ -271,10 +272,12 @@ const showArchived = ref(false)
 const archivingTaskId = ref<string | null>(null)
 const routeTaskId = ref<string | null>(null)
 
-// Only pass status filter to the query - we'll filter search client-side
-const filters = computed(() => ({
-  status: statusFilter.value || undefined,
-}))
+const filters = computed(() => {
+  // Only pass status filter to the query if it's not "not_completed"
+  return {
+    status: statusFilter.value && statusFilter.value !== 'not_completed' ? statusFilter.value : undefined,
+  }
+})
 
 const { data: tasks, isLoading, error } = useTasksQuery(filters)
 const createMutation = useCreateTaskMutation()
@@ -287,8 +290,17 @@ const { data: users, isLoading: usersLoading } = useUsersQuery()
 // Computed - Filter search client-side to avoid constant refetching
 const filteredTasks = computed(() => {
   if (!tasks.value) return []
+  
   const searchTerm = searchQuery.value.toLowerCase().trim()
   let result = tasks.value.filter(task => showArchived.value ? !!task.archived : !task.archived)
+  
+  // Handle "All not completed" filter
+  if (statusFilter.value === 'not_completed') {
+    result = result.filter(task => task.status !== 'completed' && task.status !== 'closed')
+  } else if (statusFilter.value) {
+    result = result.filter(task => task.status === statusFilter.value)
+  }
+  
   if (!searchTerm) return result
   return result.filter(task => {
     const summary = task.summary?.toLowerCase() || ''
