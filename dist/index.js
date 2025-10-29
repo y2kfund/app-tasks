@@ -1873,7 +1873,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
               class: "btn btn-minimize",
               onClick: h[1] || (h[1] = (g) => n("minimize")),
               title: "Minimize"
-            }, " ➖ ")
+            }, " X ")
           ])
         ]),
         a("div", _n, [
@@ -2085,7 +2085,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
       ])) : Y("", !0)
     ]));
   }
-}), Yn = /* @__PURE__ */ mt(Gn, [["__scopeId", "data-v-4ab05784"]]);
+}), Yn = /* @__PURE__ */ mt(Gn, [["__scopeId", "data-v-381833ca"]]);
 export {
   mn as TaskDetail,
   Yn as Tasks

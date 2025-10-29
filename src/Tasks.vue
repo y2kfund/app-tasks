@@ -33,7 +33,7 @@
             @click="emit('minimize')"
             title="Minimize"
           >
-            ➖
+            X
           </button>
         </div>
       </div>
