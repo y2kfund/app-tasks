@@ -15,11 +15,8 @@
     <!-- Task List View -->
     <div v-else-if="currentView === 'list'" class="tasks-container">
       <div class="tasks-header">
-        <h2 
-          :class="{ 'tasks-header-clickable': props.showHeaderLink }"
-          @click="props.showHeaderLink && emit('navigate')"
-        >
-          {{ appName }}
+        <h2>
+          <span :class="{ 'tasks-header-clickable': props.showHeaderLink }" @click="props.showHeaderLink && emit('navigate')">{{ appName }}</span>
           <button
             class="appname-rename-btn"
             @click="openAppNameDialog"

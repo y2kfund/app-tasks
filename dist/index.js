@@ -1,7 +1,7 @@
 var wt = Object.defineProperty;
 var xt = (s, e, t) => e in s ? wt(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
 var T = (s, e, t) => xt(s, typeof e != "symbol" ? e + "" : e, t);
-import { inject as vt, computed as Me, unref as v, defineComponent as nt, ref as A, createElementBlock as b, openBlock as f, createElementVNode as a, createCommentVNode as Y, withDirectives as P, toDisplayString as R, withKeys as Be, vModelText as te, normalizeClass as ne, vModelSelect as re, Fragment as de, renderList as he, createTextVNode as ee, nextTick as $t, onMounted as _t, watch as St, createBlock as Tt, vModelCheckbox as Rt } from "vue";
+import { inject as vt, computed as Me, unref as v, defineComponent as nt, ref as A, createElementBlock as b, openBlock as f, createElementVNode as a, createCommentVNode as Y, withDirectives as P, toDisplayString as R, withKeys as Be, vModelText as ee, normalizeClass as ne, vModelSelect as re, Fragment as de, renderList as he, createTextVNode as se, nextTick as $t, onMounted as _t, watch as St, createBlock as Tt, vModelCheckbox as Rt } from "vue";
 import { useQuery as ge, useQueryClient as fe, useMutation as me } from "@tanstack/vue-query";
 const Ct = Symbol.for("y2kfund.supabase");
 function G() {
@@ -1429,7 +1429,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
       const d = ae.value.find((L) => L.id === w);
       return (d == null ? void 0 : d.name) || w;
     }
-    function se(w) {
+    function te(w) {
       return S.parse(w);
     }
     function Le(w) {
@@ -1483,7 +1483,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
               style: { "font-size": "1rem", width: "100%" },
               placeholder: "Task Summary"
             }, null, 544)), [
-              [te, z.value]
+              [ee, z.value]
             ])
           ]),
           a("button", {
@@ -1510,7 +1510,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
                   ref_key: "editInput",
                   ref: H
                 }, null, 544)), [
-                  [te, z.value]
+                  [ee, z.value]
                 ]) : (f(), b("div", {
                   key: 1,
                   class: "info-value",
@@ -1608,7 +1608,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
             }, [
               a("h3", null, [
                 a("span", Ds, R(Z.value ? "▼" : "▶"), 1),
-                d[22] || (d[22] = ee(" History ", -1))
+                d[22] || (d[22] = se(" History ", -1))
               ])
             ]),
             Z.value ? (f(), b("div", Us, [
@@ -1622,14 +1622,14 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
                     a("span", Hs, R(we(y.changed_at)), 1)
                   ]),
                   a("div", Zs, [
-                    d[26] || (d[26] = ee(" Changed ", -1)),
+                    d[26] || (d[26] = se(" Changed ", -1)),
                     a("strong", null, R(ze(y.field_name)), 1),
                     a("span", Qs, [
-                      d[23] || (d[23] = ee(' from "', -1)),
+                      d[23] || (d[23] = se(' from "', -1)),
                       a("span", Os, R(y.old_value), 1),
-                      d[24] || (d[24] = ee('" to "', -1)),
+                      d[24] || (d[24] = se('" to "', -1)),
                       a("span", Ks, R(y.new_value), 1),
-                      d[25] || (d[25] = ee('" ', -1))
+                      d[25] || (d[25] = se('" ', -1))
                     ])
                   ])
                 ]))), 128))
@@ -1664,7 +1664,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
                     rows: "3",
                     class: "comment-input"
                   }, null, 512), [
-                    [te, c.value]
+                    [ee, c.value]
                   ]),
                   a("button", {
                     class: "btn-primary",
@@ -1678,7 +1678,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
                   y.created_by === "Analyze" ? (f(), b("div", {
                     key: 0,
                     class: "comment-text",
-                    innerHTML: se(y.comment)
+                    innerHTML: te(y.comment)
                   }, null, 8, on)) : (f(), b("div", {
                     key: 1,
                     class: "comment-text",
@@ -1696,7 +1696,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
                 onPaste: $,
                 disabled: U.value
               }, null, 40, dn), [
-                [te, M.value]
+                [ee, M.value]
               ]),
               d[27] || (d[27] = a("small", null, "Paste images from clipboard", -1)),
               a("button", {
@@ -1764,8 +1764,8 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
       let h = p.value.filter((g) => o.value ? !!g.archived : !g.archived);
       return $ ? h.filter((g) => {
         var w, d, L, X, J;
-        const se = ((w = g.summary) == null ? void 0 : w.toLowerCase()) || "", Le = ((d = g.description) == null ? void 0 : d.toLowerCase()) || "", Pe = ((L = g.status) == null ? void 0 : L.toLowerCase().replace("_", " ")) || "", qe = ((X = g.priority) == null ? void 0 : X.toLowerCase()) || "", Ee = ((J = g.assigned_to) == null ? void 0 : J.toLowerCase()) || "";
-        return se.includes($) || Le.includes($) || Pe.includes($) || qe.includes($) || Ee.includes($);
+        const te = ((w = g.summary) == null ? void 0 : w.toLowerCase()) || "", Le = ((d = g.description) == null ? void 0 : d.toLowerCase()) || "", Pe = ((L = g.status) == null ? void 0 : L.toLowerCase().replace("_", " ")) || "", qe = ((X = g.priority) == null ? void 0 : X.toLowerCase()) || "", Ee = ((J = g.assigned_to) == null ? void 0 : J.toLowerCase()) || "";
+        return te.includes($) || Le.includes($) || Pe.includes($) || qe.includes($) || Ee.includes($);
       }) : h;
     });
     function H($) {
@@ -1819,8 +1819,8 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
     }), St([i, c], ([$, h]) => {
       const g = new URLSearchParams(window.location.search);
       h === "detail" && $ ? g.set("taskId", $) : g.delete("taskId");
-      const se = `${window.location.pathname}?${g.toString()}`;
-      window.history.replaceState({}, "", se);
+      const te = `${window.location.pathname}?${g.toString()}`;
+      window.history.replaceState({}, "", te);
     });
     async function xe($) {
       k.value = $.id;
@@ -1844,24 +1844,24 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
     return ($, h) => (f(), b("div", bn, [
       v(C) && !v(p) ? (f(), b("div", yn, [...h[12] || (h[12] = [
         a("div", { class: "loading-spinner" }, null, -1),
-        ee(" Loading tasks... ", -1)
+        se(" Loading tasks... ", -1)
       ])])) : v(m) ? (f(), b("div", wn, [
         h[13] || (h[13] = a("h3", null, "Error loading tasks", -1)),
         a("p", null, R(v(m)), 1)
       ])) : c.value === "list" ? (f(), b("div", xn, [
         a("div", vn, [
-          a("h2", {
-            class: ne({ "tasks-header-clickable": t.showHeaderLink }),
-            onClick: h[0] || (h[0] = (g) => t.showHeaderLink && n("navigate"))
-          }, [
-            ee(R(V.value) + " ", 1),
+          a("h2", null, [
+            a("span", {
+              class: ne({ "tasks-header-clickable": t.showHeaderLink }),
+              onClick: h[0] || (h[0] = (g) => t.showHeaderLink && n("navigate"))
+            }, R(V.value), 3),
             a("button", {
               class: "appname-rename-btn",
               onClick: we,
               title: "Rename app",
               style: { width: "auto", padding: "2px 7px", "font-size": "13px", background: "none", border: "none", color: "#888", cursor: "pointer" }
             }, "✎")
-          ], 2),
+          ]),
           a("div", $n, [
             a("button", {
               class: "btn btn-add",
@@ -1883,7 +1883,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
             placeholder: "Search tasks...",
             class: "filter-input"
           }, null, 512), [
-            [te, r.value]
+            [ee, r.value]
           ]),
           P(a("select", {
             "onUpdate:modelValue": h[3] || (h[3] = (g) => l.value = g),
@@ -1903,7 +1903,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
             }, null, 512), [
               [Rt, o.value]
             ]),
-            h[16] || (h[16] = ee(" Show Archived ", -1))
+            h[16] || (h[16] = se(" Show Archived ", -1))
           ])
         ]),
         a("div", Tn, [
@@ -1951,12 +1951,12 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
                 a("td", An, [
                   a("button", {
                     class: "btn btn-icon",
-                    onClick: (se) => ae(g.id),
+                    onClick: (te) => ae(g.id),
                     title: "View details"
                   }, " 👁️ ", 8, zn),
                   a("button", {
                     class: ne(["btn btn-icon", g.archived ? "btn-success" : "btn-danger"]),
-                    onClick: (se) => xe(g),
+                    onClick: (te) => xe(g),
                     title: g.archived ? "Unarchive task" : "Archive task",
                     disabled: k.value === g.id
                   }, [
@@ -1990,7 +1990,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
               placeholder: "Enter task summary",
               autofocus: ""
             }, null, 512), [
-              [te, u.value.summary]
+              [ee, u.value.summary]
             ])
           ]),
           a("div", Mn, [
@@ -2001,7 +2001,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
               placeholder: "Enter task description",
               rows: "6"
             }, null, 512), [
-              [te, u.value.description]
+              [ee, u.value.description]
             ])
           ]),
           a("div", Dn, [
@@ -2073,7 +2073,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
             "onUpdate:modelValue": h[10] || (h[10] = (g) => D.value = g),
             placeholder: "App name"
           }, null, 512), [
-            [te, D.value]
+            [ee, D.value]
           ]),
           a("div", jn, [
             a("button", { onClick: ze }, "Save"),
@@ -2085,7 +2085,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
       ])) : Y("", !0)
     ]));
   }
-}), Yn = /* @__PURE__ */ mt(Gn, [["__scopeId", "data-v-2050ef03"]]);
+}), Yn = /* @__PURE__ */ mt(Gn, [["__scopeId", "data-v-4ab05784"]]);
 export {
   mn as TaskDetail,
   Yn as Tasks
