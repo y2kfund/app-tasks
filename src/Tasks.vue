@@ -19,7 +19,13 @@
           :class="{ 'tasks-header-clickable': props.showHeaderLink }"
           @click="props.showHeaderLink && emit('navigate')"
         >
-          Tasks Management
+          {{ appName }}
+          <button
+            class="appname-rename-btn"
+            @click="openAppNameDialog"
+            title="Rename app"
+            style="width:auto;padding: 2px 7px; font-size: 13px; background: none; border: none; color: #888; cursor: pointer;"
+          >✎</button>
         </h2>
         <div class="tasks-header-actions">
           <button class="btn btn-add" @click="showCreateView">
@@ -205,6 +211,17 @@
       :user-id="userId"
       @close="backToList"
     />
+
+    <div v-if="showAppNameDialog" class="rename-dialog-backdrop">
+      <div class="rename-dialog">
+        <h3>Rename App</h3>
+        <input v-model="appNameInput" placeholder="App name" />
+        <div class="dialog-actions">
+          <button @click="saveAppName">Save</button>
+          <button @click="showAppNameDialog = false">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -331,6 +348,36 @@ function backToList() {
   selectedTaskId.value = null
 }
 
+const appName = ref('Task Management')
+const showAppNameDialog = ref(false)
+const appNameInput = ref('')
+
+function parseAppNameFromUrl(): string {
+  const url = new URL(window.location.href)
+  return url.searchParams.get('app_name') || 'Task Management'
+}
+
+function writeAppNameToUrl(name: string) {
+  const url = new URL(window.location.href)
+  if (name && name.trim() && name !== 'Task Management') {
+    url.searchParams.set('app_name', name.trim())
+  } else {
+    url.searchParams.delete('app_name')
+  }
+  window.history.replaceState({}, '', url.toString())
+}
+
+function openAppNameDialog() {
+  appNameInput.value = appName.value
+  showAppNameDialog.value = true
+}
+
+function saveAppName() {
+  appName.value = appNameInput.value.trim() || 'Task Management'
+  writeAppNameToUrl(appName.value)
+  showAppNameDialog.value = false
+}
+
 // On mount, check for taskId in URL
 onMounted(() => {
   const params = new URLSearchParams(window.location.search)
@@ -339,6 +386,11 @@ onMounted(() => {
     selectedTaskId.value = tid
     currentView.value = 'detail'
   }
+  appName.value = parseAppNameFromUrl()
+
+  window.addEventListener('popstate', () => {
+    appName.value = parseAppNameFromUrl()
+  })
 })
 
 // Watch selectedTaskId and currentView to update URL
@@ -810,5 +862,98 @@ function getUserName(userId: string | undefined) {
   gap: 0.25rem;
   font-size: 0.95em;
   color: #555;
+}
+/* Rename Account Dialog Styles */
+.rename-dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.rename-dialog {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 400px;
+  max-width: 90%;
+}
+
+.rename-dialog h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.rename-dialog input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.rename-dialog .dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.rename-dialog button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.rename-dialog button:hover {
+  background: #f3f4f6;
+}
+
+.rename-dialog button:active {
+  background: #e5e7eb;
+}
+
+.rename-dialog button:first-child {
+  background: #007bff;
+  color: white;
+}
+
+.rename-dialog button:first-child:hover {
+  background: #0056b3;
+}
+
+.rename-dialog button:first-child:active {
+  background: #004085;
+}
+.rename-dialog-backdrop {
+  position: fixed !important;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 99999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rename-dialog {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  z-index: 100000 !important;
+  min-width: 320px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
 }
 </style>
