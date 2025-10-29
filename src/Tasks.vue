@@ -354,15 +354,15 @@ const appNameInput = ref('')
 
 function parseAppNameFromUrl(): string {
   const url = new URL(window.location.href)
-  return url.searchParams.get('app_name') || 'Task Management'
+  return url.searchParams.get('task_app_name') || 'Task Management'
 }
 
 function writeAppNameToUrl(name: string) {
   const url = new URL(window.location.href)
   if (name && name.trim() && name !== 'Task Management') {
-    url.searchParams.set('app_name', name.trim())
+    url.searchParams.set('task_app_name', name.trim())
   } else {
-    url.searchParams.delete('app_name')
+    url.searchParams.delete('task_app_name')
   }
   window.history.replaceState({}, '', url.toString())
 }

@@ -1799,11 +1799,11 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
     }
     const V = A("Task Management"), W = A(!1), D = A("");
     function ye() {
-      return new URL(window.location.href).searchParams.get("app_name") || "Task Management";
+      return new URL(window.location.href).searchParams.get("task_app_name") || "Task Management";
     }
     function Ae($) {
       const h = new URL(window.location.href);
-      $ && $.trim() && $ !== "Task Management" ? h.searchParams.set("app_name", $.trim()) : h.searchParams.delete("app_name"), window.history.replaceState({}, "", h.toString());
+      $ && $.trim() && $ !== "Task Management" ? h.searchParams.set("task_app_name", $.trim()) : h.searchParams.delete("task_app_name"), window.history.replaceState({}, "", h.toString());
     }
     function we() {
       D.value = V.value, W.value = !0;
@@ -2085,7 +2085,7 @@ const ys = { class: "detail-container" }, ws = { class: "detail-header" }, xs = 
       ])) : Y("", !0)
     ]));
   }
-}), Yn = /* @__PURE__ */ mt(Gn, [["__scopeId", "data-v-1cd4aaac"]]);
+}), Yn = /* @__PURE__ */ mt(Gn, [["__scopeId", "data-v-2050ef03"]]);
 export {
   mn as TaskDetail,
   Yn as Tasks
