@@ -24,9 +24,11 @@ editInput: HTMLSelectElement;
 export declare const Tasks: DefineComponent<Props, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {
 minimize: () => any;
 navigate: () => any;
+maximize: () => any;
 }, string, PublicProps, Readonly<Props> & Readonly<{
 onMinimize?: (() => any) | undefined;
 onNavigate?: (() => any) | undefined;
+onMaximize?: (() => any) | undefined;
 }>, {
 userId: string;
 showHeaderLink: boolean;

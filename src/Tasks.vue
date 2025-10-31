@@ -28,6 +28,13 @@
           <button class="btn btn-add" @click="showCreateView">
             <span class="icon">➕</span>
           </button>
+          <button
+              @click="emit('maximize')"
+              class="btn btn-minimize"
+              title="Maximize"
+            >
+            ⤢
+          </button>
           <button 
             class="btn btn-minimize" 
             @click="emit('minimize')"
@@ -248,6 +255,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{ 
   'minimize': []
   'navigate': []
+  'maximize': []
 }>()
 
 // State
